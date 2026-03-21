@@ -3,72 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exporta Tradición - AgroJusto PWA</title>
+    <title>Exporta Tradición - Comercialización Local</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#16a34a">
-    
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; text-align: center; background: #f0fdf4; color: #1f2937; }
-        header { background: #16a34a; color: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .card { background: white; padding: 20px; margin: 20px auto; border-radius: 15px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); max-width: 450px; }
-        .status-ia { padding: 12px; border-radius: 8px; background: #f9fafb; margin-top: 15px; font-weight: bold; border-left: 5px solid #16a34a; }
-        input[type=range] { width: 100%; accent-color: #16a34a; cursor: pointer; }
-        .team-section { margin-top: 40px; padding: 20px; background: #fff; border-radius: 15px; font-size: 0.9rem; border: 1px solid #dcfce7; }
-        .team-list { list-style: none; padding: 0; line-height: 1.6; text-align: left; display: inline-block; }
-    </style>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/628/628283.png">
+
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <header>
-        <h1>Exporta Tradición</h1>
-        <p>Optimización Inteligente de Cosecha</p>
-    </header>
+    <nav>
+        <div class="nav-container">
+            <div class="logo" style="cursor: pointer;" onclick="navegar('vista-inicio')">Exporta<span>Tradición</span></div>
+            <div class="nav-links">
+                <button onclick="navegar('vista-inicio')">Inicio</button>
+                <button onclick="navegar('vista-nosotros')">Nosotros</button>
+                <button onclick="navegar('vista-tienda')">Mercado</button>
+                <button onclick="navegar('vista-registro-venta')">Vender</button>
+                <button onclick="navegar('vista-registro')" class="btn-registro-nav" style="color: var(--primary);">Registro</button>
+                <button onclick="navegar('vista-ajustes')" style="color: var(--primary); font-size: 1.2rem;" title="Ajustes de Accesibilidad">⚙️</button>
+            </div>
+        </div>
+    </nav>
 
-    <div class="card">
-        <h3>Simulador de Exportación</h3>
-        <p>Ajustar carga (kg):</p>
-        <input type="range" min="50" max="5000" value="1000" id="slider" oninput="runIA(this.value)">
-        <p><strong id="kgDisplay" style="color:#16a34a; font-size: 1.2rem;">1000kg</strong></p>
+    <main id="app-container">
         
-        <div class="status-ia" id="iaBox">
-            Estado: <span style="color: #16a34a;">Modelo Python Listo</span>
+        <section id="vista-inicio" class="view active">
+            <header style="border-radius: 0 0 40px 40px; margin-bottom: 40px;">
+                <div class="hero-content reveal active">
+                    <h1>Justicia en el Campo con <span>Cálculo Aplicado</span></h1>
+                    <p>Eliminamos intermediarios usando modelos de optimización matemática para asegurar el pago justo al productor agrícola.</p>
+                    
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px;">
+                        <button class="btn btn-registro-nav" style="background: var(--primary);" onclick="navegar('vista-registro')">📝 Registrarse</button>
+                        <button class="btn" style="background: var(--secondary);" onclick="navegar('vista-registro-venta')">🤝 Vende con nosotros</button>
+                        <button class="btn" style="background: var(--accent);" onclick="navegar('vista-tienda')">🛒 Mercado Integrado</button>
+                    </div>
+                </div>
+            </header>
+
+            <div id="problem" class="reveal active">
+                <div class="section-title">
+                    <h2>El Problema del Intermediario</h2>
+                    <div class="underline"></div>
+                </div>
+                <div class="grid-3" style="grid-template-columns: 1fr 1fr;">
+                    <div class="card">
+                        <h3>Distribución de Ganancias</h3>
+                        <p>En el mercado tradicional, el coyotaje absorbe el valor de la cosecha. Al aplicar nuestro modelo matemático, el pequeño productor recupera su margen legítimo.</p>
+                        <div style="margin-top:30px; display:flex; gap:15px; flex-direction:column;">
+                            <button class="btn" style="background:#fee2e2; color:#b91c1c;" onclick="animateDonut('traditional')">Ver Modelo Tradicional</button>
+                            <button class="btn" style="background:#d9f99d; color:#365314;" onclick="animateDonut('fair')">Ver Modelo Exporta Tradición</button>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex; justify-content:center; align-items:center; flex-direction:column;">
+                        <canvas id="donutChart" width="250" height="250"></canvas>
+                        <p id="donutText" style="margin-top:20px; font-weight:bold; font-size: 1.2rem; color: var(--danger);">PRODUCTOR: 30%</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="vista-nosotros" class="view">
+            <div class="section-title" style="margin-top: 40px;">
+                <h2>Quiénes Somos y Qué Buscamos</h2>
+                <div class="underline"></div>
+            </div>
+            
+            <div class="card" style="max-width: 900px; margin: 0 auto 40px;">
+                <h3 style="color: var(--primary-dark); margin-bottom: 15px; font-size: 1.5rem;">Nuestra Misión</h3>
+                <p style="font-size: 1.05rem; margin-bottom: 25px;">
+                    Buscamos erradicar el "coyotaje" y las prácticas de intermediarios que absorben el valor del trabajo agrícola. Nuestro objetivo es devolverle el control al pequeño productor.
+                </p>
+
+                <h3 style="color: var(--secondary); margin-bottom: 15px; font-size: 1.5rem;">¿Qué nos mueve?</h3>
+                <p style="font-size: 1.05rem; margin-bottom: 25px;">
+                    Exporta Tradición nace de la necesidad de aplicar la tecnología y el cálculo matemático creando un ecosistema donde las matemáticas protegen al trabajador.
+                </p>
+
+                <div class="grid-3" style="margin-top: 40px; grid-template-columns: 1fr 1fr;">
+                    <div style="background: rgba(22, 101, 52, 0.1); padding: 25px; border-radius: 15px; border: 1px solid var(--primary);">
+                        <div style="font-size: 2.5rem; margin-bottom: 10px;">🤝</div>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Comercio Transparente</h4>
+                        <p style="font-size: 0.9rem;">Cero comisiones ocultas. El trato es directo entre quien cultiva y quien consume.</p>
+                    </div>
+                    <div style="background: rgba(30, 58, 138, 0.1); padding: 25px; border-radius: 15px; border: 1px solid var(--secondary);">
+                        <div style="font-size: 2.5rem; margin-bottom: 10px;">📈</div>
+                        <h4 style="color: var(--secondary); margin-bottom: 10px;">Tecnología Aplicada</h4>
+                        <p style="font-size: 0.9rem;">Usamos modelos de límites y derivadas para calcular precios que jamás generen pérdidas.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="vista-registro" class="view">
+            <div class="section-title" style="margin-top: 40px;">
+                <h2>Tu Cuenta en Exporta Tradición</h2>
+                <div class="underline"></div>
+            </div>
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <div id="bloque-formulario">
+                    <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Regístrate para comprar o vender productos sin intermediarios.</p>
+                    <form id="form-registro-general" onsubmit="guardarRegistroGeneral(event)">
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" id="reg-nombre" required placeholder="Ej. Juan">
+                        </div>
+                        <div class="form-group">
+                            <label>Apellido</label>
+                            <input type="text" id="reg-apellido" required placeholder="Ej. Pérez">
+                        </div>
+                        <div class="form-group">
+                            <label>Localización (Ciudad o Municipio)</label>
+                            <input type="text" id="reg-localizacion" required placeholder="Ej. Tapachula, Chiapas">
+                        </div>
+                        <div class="form-group">
+                            <label>Número de Teléfono</label>
+                            <input type="tel" id="reg-telefono" required placeholder="Ej. 962 123 4567">
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%; margin-top: 15px;">Guardar y Continuar al Mercado</button>
+                    </form>
+                </div>
+
+                <div id="bloque-perfil" style="display: none; text-align: center; padding: 20px;">
+                    <div style="font-size: 5rem; margin-bottom: 15px;">👤</div>
+                    <h3 id="texto-bienvenida" style="font-size: 1.8rem; color: var(--primary-dark); margin-bottom: 10px;">¡Hola!</h3>
+                    <button class="btn" onclick="navegar('vista-tienda')" style="width: 100%; margin-bottom: 15px; background: var(--secondary);">Ir al Mercado</button>
+                    <button class="btn" onclick="cerrarSesion()" style="width: 100%; background: var(--danger); opacity: 0.9;">🚪 Cerrar Sesión</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="vista-registro-venta" class="view">
+            <div class="section-title" style="margin-top: 40px;">
+                <h2>Registra tu Cosecha</h2>
+                <div class="underline"></div>
+            </div>
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <form id="form-registro-venta" onsubmit="guardarRegistroVenta(event)">
+                    <div class="form-group">
+                        <label>Nombre del Productor o Finca</label>
+                        <input type="text" id="ven-nombre" required placeholder="Ej. Finca La Esperanza">
+                    </div>
+                    <div class="form-group">
+                        <label>Ubicación de la Parcela</label>
+                        <input type="text" id="ven-ubicacion" required placeholder="Ej. Ejido El Edén">
+                    </div>
+                    <div class="form-group">
+                        <label>Producto que deseas vender</label>
+                        <input type="text" id="ven-producto" required placeholder="Ej. Café, Maíz, Miel, Cacao">
+                    </div>
+                    <div class="form-group">
+                        <label>Precio de venta directo al público ($)</label>
+                        <input type="number" id="ven-precio" required placeholder="Ej. 180">
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%; margin-top: 15px; background: var(--accent);">Publicar Producto</button>
+                </form>
+            </div>
+        </section>
+
+        <section id="vista-tienda" class="view">
+            <div class="section-title" style="margin-top: 40px;">
+                <h2>Mercado Exporta Tradición</h2>
+                <div class="underline"></div>
+            </div>
+            
+            <div style="background: var(--bg-card); padding: 30px; border-radius: 20px; margin-bottom: 40px;">
+                <h3 style="text-align: center; margin-bottom: 30px; color: var(--primary-dark);">⚙️ Panel Analítico del Productor (Matemáticas Aplicadas)</h3>
+                <div class="grid-3">
+                    <div class="card" style="box-shadow: none; border: 1px dashed var(--border-color);">
+                        <h3>Límite de Protección</h3>
+                        <canvas id="limitCanvas" width="220" height="150"></canvas>
+                        <div class="controls">
+                            <input type="range" id="limitRange" min="20" max="100" value="60" oninput="updateLimit(this.value)">
+                            <span id="limitStatus" class="status-badge" style="color:var(--primary)">SEGURO</span>
+                        </div>
+                    </div>
+                    <div class="card" style="box-shadow: none; border: 1px dashed var(--border-color);">
+                        <h3>Derivada de Demanda</h3>
+                        <canvas id="derivCanvas" width="220" height="150"></canvas>
+                        <div class="controls">
+                            <input type="range" id="derivRange" min="0" max="220" value="50" oninput="updateDeriv(this.value)">
+                            <span id="derivStatus" class="status-badge" style="color:var(--secondary)">CRECIENTE</span>
+                        </div>
+                    </div>
+                    <div class="card" style="box-shadow: none; border: 1px dashed var(--border-color);">
+                        <h3>Optimización de Ganancia</h3>
+                        <canvas id="optCanvas" width="220" height="150"></canvas>
+                        <div class="controls">
+                            <input type="range" id="optRange" min="0" max="100" value="25" oninput="updateOpt(this.value)">
+                            <span id="optStatus" class="status-badge" style="color:var(--text-muted)">Beneficio: $350</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 20px; font-size: 1.8rem;">Catálogo Disponible</h3>
+            <div class="grid-3" id="catalogo-productos">
+                </div>
+        </section>
+
+        <section id="vista-ajustes" class="view">
+            <div class="section-title" style="margin-top: 40px;">
+                <h2>Accesibilidad</h2>
+                <div class="underline"></div>
+            </div>
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <div style="display: flex; justify-content: space-between; padding: 20px 0;">
+                    <span>🌙 Modo Oscuro</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-dark" onchange="toggleDarkMode()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <div class="hero-content">
+            <h2 style="margin-bottom:20px; color: var(--header-text);">Hacia una Economía Agraria Sostenible</h2>
+            <div style="margin-top:40px; font-size:0.9rem; color: #a8a29e; line-height: 1.8;">
+                <p style="opacity: 0.8; margin-bottom: 10px;">© 2026 Exporta Tradición</p>
+                <p><strong>Autores:</strong><br>
+                Gael Jesús Marroquín Mateo<br>
+                Oscar Toledo Carrascosa (Matemático)<br>
+                Nelly Jackeline Chirino Ortiz<br>
+                Julio Cesar Meridad Ramírez<br>
+                Crhistopher Alexander Molina Hernández</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="modalPago" class="modal-overlay" onclick="cerrarModalSiFuera(event)">
+        <div class="modal-content">
+            <span class="close-modal" onclick="cerrarModal()">&times;</span>
+            <h3 id="modalTitle">Comprar Producto</h3>
+            <div id="efectivoInfo" style="display: block; margin-top: 25px; background: rgba(132, 204, 22, 0.1); padding: 20px; border-radius: 12px; border: 1px solid var(--primary);">
+                <p style="color: var(--primary-dark); font-weight: bold;">¡Trato directo sin intermediarios!</p>
+                <a href="tel:+529621474370" style="display: inline-block; margin-top: 15px; font-weight: bold; color: white; background: var(--primary); text-decoration: none; padding: 10px 20px; border-radius: 20px;">📞 Llamar al Productor</a>
+            </div>
         </div>
     </div>
 
-    <div class="team-section">
-        <h3>Equipo de Desarrollo</h3>
-        <ul class="team-list">
-            <li><strong>• Gael Jesús Marroquín Mateo</strong></li>
-            <li>• Oscar Toledo Carrascosa (Matemático)</li>
-            <li>• Nelly Jackeline Chirino Ortiz</li>
-            <li>• Julio Cesar Meridad Ramírez</li>
-            <li>• Crhistopher Alexander Molina Hernández</li>
-        </ul>
-        <p style="font-size: 0.7rem; color: #888; margin-top: 15px;">Proyecto AgroJusto - PWA 2026</p>
-    </div>
-
     <script>
-        // REGISTRO DEL SERVICE WORKER (Para instalar como App)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(() => console.log("PWA: Lista para instalar"))
-                    .catch(err => console.log("Error en SW:", err));
+                    .then(reg => console.log('PWA: Service Worker listo'))
+                    .catch(err => console.log('PWA: Error al registrar', err));
             });
         }
-
-        // LÓGICA DE SIMULACIÓN IA
-        function runIA(val) {
-            document.getElementById('kgDisplay').innerText = val + "kg";
-            const iaBox = document.getElementById('iaBox');
-            iaBox.innerHTML = 'Estado: <span style="color:#a855f7;">Calculando Algoritmo...</span>';
-            
-            setTimeout(() => {
-                let ganancia = (val * 18.5).toLocaleString('es-MX', {style: 'currency', currency: 'MXN'});
-                iaBox.innerHTML = 'Proyección de Ganancia: <span style="color:#16a34a;">' + ganancia + '</span>';
-            }, 400);
-        }
     </script>
+    <script src="script.js"></script>
 </body>
 </html>
