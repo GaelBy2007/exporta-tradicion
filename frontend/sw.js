@@ -1,26 +1,16 @@
-const CACHE_NAME = 'agrojusto-v1';
-const assets = [
-  './',
-  './index.html',
-  './styles.css',
-  './script.js',
-  './manifest.json'
-];
+// sw.js - Copia esto tal cual
+const CACHE_NAME = 'v1_exporta_tradicion';
 
-// Instalar el Service Worker
-self.addEventListener('install', e => {
+self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(assets);
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(['./', './index.html', './styles.css', './script.js']);
     })
   );
 });
 
-// Activar y responder
-self.addEventListener('fetch', e => {
+self.addEventListener('fetch', (e) => {
   e.respondWith(
-    caches.match(e.request).then(res => {
-      return res || fetch(e.request);
-    })
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });
