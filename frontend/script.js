@@ -1,326 +1,450 @@
-// ==========================================
-// 0. CONFIGURACIÓN GLOBAL
-// ==========================================
-// Esta es la dirección de tu "cerebro" en la nube (Render)
-const API_URL = "https://exportatradicion-api.onrender.com";
+// --- 1. LÓGICA MATEMÁTICA Y GRÁFICAS ---
 
-// ==========================================
-// 1. SISTEMA DE NAVEGACIÓN Y VISTAS
-// ==========================================
-function navegar(vistaId) {
+function updateLimit(val) {
+    document.getElementById('limitVal').innerText = "$" + val;
+    const status = document.getElementById('limitStatus');
+    status.innerText = val >= 50 ? "ESTADO: SEGURO" : "ESTADO: RIESGO";
+    status.style.color = val >= 50 ? "var(--primary)" : "red";
+    drawLimitChart(val);
+}
+
+function drawLimitChart(val) {
+    const canvas = document.getElementById('limitCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Línea de costo base
+    ctx.beginPath();
+    ctx.strokeStyle = '#ef4444';
+    ctx.setLineDash([5, 5]);
+    ctx.moveTo(0, h - 50);
+    ctx.lineTo(w, h - 50);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Barra de precio
+    ctx.fillStyle = val >= 50 ? '#16a34a' : '#ef4444';
+    ctx.fillRect(w/2 - 25, h - val, 50, val);
+}
+
+function updateDeriv(val) {
+    document.getElementById('derivVal').innerText = val + "%";
+    const status = document.getElementById('derivStatus');
+    status.innerText = val > 70 ? "ALTA DEMANDA" : "ESTABLE";
+    status.style.color = val > 70 ? "var(--accent)" : "var(--secondary)";
+    drawDerivChart(val);
+}
+
+function drawDerivChart(val) {
+    const canvas = document.getElementById('derivCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.beginPath();
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 4;
+    ctx.moveTo(0, h);
+    
+    // Curva simulando la derivada
+    let controlY = h - (val * 1.5);
+    ctx.quadraticCurveTo(w/2, controlY, w, h - (val * 0.8));
+    ctx.stroke();
+}
+
+function sincronizarOpt(val) {
+    let numericVal = parseFloat(val);
+    if (isNaN(numericVal) || numericVal < 0) numericVal = 0;
+    if (numericVal > 1000) numericVal = 1000;
+
+    document.getElementById('optRange').value = numericVal;
+    
+    const inputNum = document.getElementById('optInput');
+    if (parseFloat(inputNum.value) !== numericVal) {
+        inputNum.value = numericVal;
+    }
+
+    updateOpt(numericVal);
+}
+
+function updateOpt(numericVal) {
+    const status = document.getElementById('optStatus');
+    // Ecuación matemática para buscar la ganancia óptima
+    let ganancia = (-0.05 * Math.pow(numericVal, 2)) + (50 * numericVal);
+    if (ganancia < 0) ganancia = 0;
+
+    status.innerText = "Beneficio Estimado: $" + Math.floor(ganancia).toLocaleString('es-MX');
+    
+    if (numericVal >= 400 && numericVal <= 600) {
+        status.style.color = "var(--accent, #f59e0b)";
+    } else {
+        status.style.color = "var(--secondary, #3b82f6)";
+    }
+
+    drawOptChart(numericVal); 
+}
+
+function drawOptChart(val) {
+    const canvas = document.getElementById('optCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    
+    ctx.beginPath();
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 2;
+    
+    for(let x = 0; x <= w; x++) {
+        let sliderValX = x * (1000 / w);
+        let y = h - (((-0.05 * Math.pow(sliderValX, 2)) + (50 * sliderValX)) * (h / 12500)); 
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    let currentX = (val / 1000) * w;
+    let currentY = h - (((-0.05 * Math.pow(val, 2)) + (50 * val)) * (h / 12500));
+
+    ctx.beginPath();
+    ctx.fillStyle = 'var(--accent, #f59e0b)';
+    ctx.arc(currentX, currentY, 6, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// --- 2. NAVEGACIÓN Y ACCESIBILIDAD ---
+
+function navegar(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById(vistaId).classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const vista = document.getElementById(id);
+    vista.classList.add('active');
+    window.scrollTo(0,0);
 
-    if(vistaId === 'vista-tienda' || vistaId === 'vista-inicio') {
-        setTimeout(() => {
-            if(vistaId === 'vista-inicio') animateDonut('traditional');
-            if(vistaId === 'vista-tienda') {
-                updateLimit(document.getElementById('limitRange').value);
-                updateDeriv(document.getElementById('derivRange').value);
-                updateOpt(document.getElementById('optRange').value);
-            }
-        }, 100);
-    }
-    
-    detenerVoz();
-    
-    const isVozActiva = localStorage.getItem('agroJusto_voz') === 'true';
-    if(isVozActiva) {
-        setTimeout(() => {
-            leerPáginaActual();
-        }, 500); 
+    if(id === 'vista-tienda') renderizarCatalogo();
+    if(id === 'vista-admin') verificarEstadoAdmin();
+
+    if(localStorage.getItem('lector_voz') === 'true') {
+        window.speechSynthesis.cancel();
+        const texto = vista.innerText.substring(0, 350); 
+        const speech = new SpeechSynthesisUtterance(texto);
+        speech.lang = 'es-MX';
+        window.speechSynthesis.speak(speech);
     }
 }
 
-// ==========================================
-// 2. ACCESIBILIDAD Y LECTOR DE VOZ
-// ==========================================
-function toggleDarkMode() {
-    const isDark = document.getElementById('toggle-dark').checked;
-    document.body.classList.toggle('dark-mode', isDark);
-    localStorage.setItem('agroJusto_dark', isDark);
-    if(document.getElementById('vista-inicio').classList.contains('active')) animateDonut('traditional');
-}
-
-function toggleLargeText() {
-    const isLarge = document.getElementById('toggle-text').checked;
-    document.body.classList.toggle('large-text', isLarge);
-    localStorage.setItem('agroJusto_largeText', isLarge);
-}
-
-function toggleVozAutomatica() {
-    const isVoz = document.getElementById('toggle-voz').checked;
-    localStorage.setItem('agroJusto_voz', isVoz);
-    if (!isVoz) detenerVoz();
-}
-
-let synth = window.speechSynthesis;
-let leyendo = false;
-
-function leerPáginaActual() {
-    detenerVoz(); 
-    const vistaActiva = document.querySelector('.view.active');
-    if(!vistaActiva) return;
-
-    let textoA_Leer = vistaActiva.innerText;
-    if(vistaActiva.id === 'vista-inicio') {
-        const headerText = document.querySelector('header').innerText;
-        textoA_Leer = headerText + ". " + textoA_Leer;
+function cerrarModalSiFuera(event) {
+    if (event.target === document.getElementById('modalPago')) {
+        document.getElementById('modalPago').style.display = 'none';
     }
-
-    const utterance = new SpeechSynthesisUtterance(textoA_Leer);
-    utterance.lang = 'es-MX'; 
-    utterance.rate = 0.95;    
-    synth.speak(utterance);
-    leyendo = true;
 }
 
-function detenerVoz() {
-    synth.cancel();
-    leyendo = false;
-}
+// --- 3. BASE DE DATOS LOCAL Y SERVIDOR (VENDER Y COMPRAR) ---
 
-function cargarAjustesGuardados() {
-    const isDark = localStorage.getItem('agroJusto_dark') === 'true';
-    const isLarge = localStorage.getItem('agroJusto_largeText') === 'true';
-    const isVoz = localStorage.getItem('agroJusto_voz') === 'true';
-
-    if(isDark) { document.body.classList.add('dark-mode'); if(document.getElementById('toggle-dark')) document.getElementById('toggle-dark').checked = true; }
-    if(isLarge) { document.body.classList.add('large-text'); if(document.getElementById('toggle-text')) document.getElementById('toggle-text').checked = true; }
-    if(isVoz && document.getElementById('toggle-voz')) document.getElementById('toggle-voz').checked = true;
-}
-
-// ==========================================
-// 3. SESIÓN, LOGIN Y LOGOUT
-// ==========================================
+// Guardar cuenta de usuario (Conecta con Python si está encendido)
 async function guardarRegistroGeneral(e) {
     e.preventDefault();
-    const usuario = {
+    const datos = {
         nombre: document.getElementById('reg-nombre').value,
         apellido: document.getElementById('reg-apellido').value,
         localizacion: document.getElementById('reg-localizacion').value,
-        telefono: document.getElementById('reg-telefono').value,
+        telefono: document.getElementById('reg-telefono').value
     };
 
     try {
-        const respuesta = await fetch(`${API_URL}/api/registro`, {
-            method: "POST", 
-            headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify(usuario)
+        const response = await fetch('http://127.0.0.1:8000/api/registro', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
         });
 
-        if (respuesta.ok) {
-            localStorage.setItem('agroJusto_usuario', JSON.stringify(usuario));
-            verificarSesion(); 
-            alert(`¡Bienvenido a Exporta Tradición, ${usuario.nombre}! Tu registro está seguro en la Base de Datos.`);
-            navegar('vista-tienda');
+        if (response.ok) {
+            console.log("Guardado en SQLite mediante Python.");
         } else {
-            const error = await respuesta.json();
-            alert("Atención: " + error.detail);
+            console.warn("Python arrojó un error, pero se guardará localmente.");
         }
     } catch (error) {
-        console.error("Error servidor:", error);
-        alert("El servidor en la nube está despertando. Intenta de nuevo en un minuto.");
+        console.warn("Servidor Python apagado o inaccesible. Guardando solo en LocalStorage.");
     }
-}
 
-function verificarSesion() {
-    const usuarioGuardado = localStorage.getItem('agroJusto_usuario');
-    const bloqueForm = document.getElementById('bloque-formulario');
-    const bloquePerfil = document.getElementById('bloque-perfil');
-    const textoBienvenida = document.getElementById('texto-bienvenida');
-    const botonesRegistroNav = document.querySelectorAll('.btn-registro-nav');
-
-    if (usuarioGuardado) {
-        const u = JSON.parse(usuarioGuardado);
-        botonesRegistroNav.forEach(btn => btn.innerText = `👤 ${u.nombre}`);
-        if(bloqueForm) bloqueForm.style.display = 'none';
-        if(bloquePerfil) {
-            bloquePerfil.style.display = 'block';
-            textoBienvenida.innerText = `¡Hola, ${u.nombre}!`;
-        }
-    } else {
-        botonesRegistroNav.forEach(btn => btn.innerText = `Registro`);
-        if(bloqueForm) bloqueForm.style.display = 'block';
-        if(bloquePerfil) bloquePerfil.style.display = 'none';
-    }
-}
-
-function cerrarSesion() {
-    localStorage.removeItem('agroJusto_usuario');
-    alert("Has cerrado sesión correctamente.");
-    location.reload(); 
+    // Siempre guardamos la sesión local para que la página funcione
+    localStorage.setItem('sesion_exporta', JSON.stringify(datos));
+    cargarAjustes();
+    navegar('vista-inicio');
+    alert("¡Cuenta registrada con éxito!");
 }
 
 function guardarRegistroVenta(e) {
     e.preventDefault();
-    const producto = {
-        productor: document.getElementById('ven-nombre').value,
-        ubicacion: document.getElementById('ven-ubicacion').value,
-        nombreProd: document.getElementById('ven-producto').value,
-        precio: document.getElementById('ven-precio').value,
-    };
-    localStorage.setItem('agroJusto_venta', JSON.stringify(producto));
-    agregarProductoAlCatalogo(producto);
-    alert('¡Producto registrado con éxito!');
-    document.getElementById('form-registro-venta').reset();
+    const user = JSON.parse(localStorage.getItem('sesion_exporta'));
+    if(!user) {
+        alert("Primero debes registrarte (Sección Registro) para poder publicar un producto.");
+        navegar('vista-registro');
+        return;
+    }
+
+    const vendedor = document.getElementById('ven-nombre').value;
+    const ubicacion = document.getElementById('ven-ubicacion').value;
+    const producto = document.getElementById('ven-producto').value;
+    const cantidad = document.getElementById('ven-cantidad').value;
+    const unidad = document.getElementById('ven-unidad').value;
+    const precio = document.getElementById('ven-precio').value;
+
+    let bd = JSON.parse(localStorage.getItem('bd_exporta')) || [];
+    bd.push({
+        id: Date.now(),
+        creador: user.nombre + " " + user.apellido, // Etiqueta al autor
+        vendedor: vendedor,
+        producto: producto,
+        cantidad: cantidad,
+        unidad: unidad,
+        precio: precio,
+        ubicacion: ubicacion
+    });
+    localStorage.setItem('bd_exporta', JSON.stringify(bd));
+    
+    alert("¡Cosecha publicada con éxito en el Mercado!");
+    e.target.reset();
     navegar('vista-tienda');
 }
 
-function agregarProductoAlCatalogo(prod) {
-    const catalogo = document.getElementById('catalogo-productos');
-    const nuevaTarjeta = document.createElement('div');
-    nuevaTarjeta.className = 'card product-card';
-    nuevaTarjeta.innerHTML = `
-        <div class="product-img" style="background: linear-gradient(135deg, #10b981, #047857);">🌱</div>
-        <div class="product-tags"><span class="tag fair" style="background: #fef08a; color: #854d0e;">Nuevo</span></div>
-        <h3>${prod.nombreProd}</h3>
-        <p class="producer">🧑🏽‍🌾 ${prod.productor} (${prod.ubicacion})</p>
-        <p class="desc">Producto local recién agregado.</p>
-        <div class="product-footer">
-            <span class="price">$${prod.precio} <small>/ Unidad</small></span>
-            <div class="action-buttons"><button class="btn-small buy" onclick="abrirModalPago('Comprar', '${prod.nombreProd}')">Comprar</button></div>
-        </div>
-    `;
-    catalogo.prepend(nuevaTarjeta);
+function renderizarCatalogo() {
+    const contenedor = document.getElementById('catalogo-productos');
+    let bd = JSON.parse(localStorage.getItem('bd_exporta')) || [];
+    const user = JSON.parse(localStorage.getItem('sesion_exporta'));
+
+    if (bd.length === 0) {
+        contenedor.innerHTML = "<p style='padding:20px; color:var(--text-muted);'>No hay productos disponibles actualmente en el mercado.</p>";
+        return;
+    }
+
+    let html = '<table class="data-table"><tr><th>Vendedor / Finca</th><th>Producto</th><th>Disponibilidad</th><th>Precio</th><th>Ubicación</th><th>Acción</th></tr>';
+    
+    bd.forEach(item => {
+        let nombreCompletoUser = user ? (user.nombre + " " + user.apellido) : "";
+        let esMio = (nombreCompletoUser === item.creador);
+        
+        let btnAccion = esMio 
+            ? `<button onclick="borrarProducto(${item.id})" style="background:var(--danger); color:white; border:none; padding:8px; border-radius:5px; cursor:pointer; width:100%; font-weight:bold;">❌ Eliminar (Mío)</button>`
+            : `<button onclick="document.getElementById('modalPago').style.display='flex'" style="background:var(--primary); color:white; border:none; padding:8px; border-radius:5px; cursor:pointer; width:100%; font-weight:bold;">🛒 Comprar</button>`;
+
+        html += `<tr>
+            <td><strong>${item.vendedor}</strong></td>
+            <td>${item.producto}</td>
+            <td>${item.cantidad} ${item.unidad}</td>
+            <td style="color:var(--primary); font-weight:bold;">$${item.precio}</td>
+            <td>${item.ubicacion}</td>
+            <td>${btnAccion}</td>
+        </tr>`;
+    });
+    html += '</table>';
+    contenedor.innerHTML = html;
 }
 
-// ==========================================
-// 4. GRÁFICOS Y MATEMÁTICAS (CANVAS)
-// ==========================================
-let currentTarget = 0.3, currentDraw = 0.3, donutAnimation;
-
-function animateDonut(mode) {
-    currentTarget = mode === 'traditional' ? 0.3 : 0.85;
-    const text = document.getElementById('donutText');
-    if(!text) return;
-    text.innerText = mode === 'traditional' ? "PRODUCTOR: 30%" : "PRODUCTOR: 85%";
-    text.style.color = mode === 'traditional' ? 'var(--danger)' : 'var(--primary)';
-    cancelAnimationFrame(donutAnimation);
-    drawFrame();
+function borrarProducto(idABorrar) {
+    if(confirm("¿Estás seguro de eliminar este producto? Ya no aparecerá en el mercado.")) {
+        let bd = JSON.parse(localStorage.getItem('bd_exporta')) || [];
+        bd = bd.filter(item => item.id !== idABorrar);
+        localStorage.setItem('bd_exporta', JSON.stringify(bd));
+        
+        renderizarCatalogo();
+        if(document.getElementById('admin-dashboard').style.display === 'block') cargarTablaAdmin();
+    }
 }
 
-function drawFrame() {
-    currentDraw += (currentTarget - currentDraw) * 0.08; 
+// --- 4. PANEL DE ADMINISTRADOR ---
+
+// Arreglo de autores autorizado
+const equipo = [
+    "Gael Jesús Marroquín Mateo", 
+    "Oscar Toledo Carrascosa", 
+    "Nelly Jackeline Chirino Ortiz", 
+    "Julio Cesar Meridad Ramírez", 
+    "Crhistopher Alexander Molina Hernández",
+    "Leo Ronay Velazquez Gutierrez"
+];
+
+function loginAdmin() {
+    const userText = document.getElementById('admin-user').value.toLowerCase();
+    const passText = document.getElementById('admin-pass').value;
+
+    let esDelEquipo = equipo.some(miembro => userText.includes(miembro.toLowerCase().split(' ')[0]));
+
+    if (esDelEquipo && passText === '253044') {
+        localStorage.setItem('admin_logueado', 'true');
+        verificarEstadoAdmin();
+    } else {
+        alert("Acceso Denegado. Autor no reconocido o contraseña incorrecta.");
+    }
+}
+
+function verificarEstadoAdmin() {
+    if (localStorage.getItem('admin_logueado') === 'true') {
+        document.getElementById('admin-login-box').style.display = 'none';
+        document.getElementById('admin-dashboard').style.display = 'block';
+        cargarTablaAdmin();
+    } else {
+        document.getElementById('admin-login-box').style.display = 'block';
+        document.getElementById('admin-dashboard').style.display = 'none';
+    }
+}
+
+function cerrarAdmin() {
+    localStorage.removeItem('admin_logueado');
+    verificarEstadoAdmin();
+}
+
+function cargarTablaAdmin() {
+    const contenedor = document.getElementById('tabla-solicitudes');
+    let bd = JSON.parse(localStorage.getItem('bd_exporta')) || [];
+
+    if (bd.length === 0) {
+        contenedor.innerHTML = "<p style='color: var(--text-muted); padding: 20px;'>No hay registros de ventas en la Base de Datos.</p>";
+        return;
+    }
+
+    let html = '<table class="data-table"><tr><th>Publicado por</th><th>Producto / Finca</th><th>Cantidad</th><th>Precio</th><th>Acción</th></tr>';
+    
+    bd.forEach(item => {
+        let creadorPost = item.creador ? item.creador : "Usuario Anónimo";
+        
+        html += `<tr>
+            <td style="font-weight: bold; color: var(--secondary);">👤 ${creadorPost}</td>
+            <td><strong>${item.producto}</strong><br><small style="color: gray;">📍 ${item.vendedor} - ${item.ubicacion}</small></td>
+            <td>${item.cantidad} ${item.unidad}</td>
+            <td style="color: var(--primary); font-weight: bold;">$${item.precio}</td>
+            <td>
+                <button onclick="borrarProducto(${item.id})" style="background: var(--danger); color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">🗑️ Eliminar Post</button>
+            </td>
+        </tr>`;
+    });
+    
+    html += '</table>';
+    contenedor.innerHTML = html;
+}
+
+// --- 5. PERFIL DE USUARIO ---
+
+function cerrarSesion() {
+    localStorage.removeItem('sesion_exporta');
+    location.reload();
+}
+
+// --- 6. ACCESIBILIDAD Y CONFIGURACIÓN ---
+
+function toggleDarkMode() {
+    const activo = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('dark_mode', activo);
+}
+
+function toggleLargeText() {
+    const activo = document.body.classList.toggle('large-text');
+    localStorage.setItem('large_text', activo);
+}
+
+function toggleLectorVoz() {
+    const activo = document.getElementById('toggle-voice').checked;
+    localStorage.setItem('lector_voz', activo);
+    if(!activo) window.speechSynthesis.cancel();
+}
+
+function cargarAjustes() {
+    const user = JSON.parse(localStorage.getItem('sesion_exporta'));
+    if(user) {
+        document.getElementById('bloque-formulario').style.display = 'none';
+        document.getElementById('bloque-perfil').style.display = 'block';
+        document.getElementById('texto-bienvenida').innerText = "¡Hola, " + user.nombre + "!";
+        document.querySelector('.btn-registro-nav').innerText = "Perfil: " + user.nombre;
+    } else {
+        document.getElementById('bloque-formulario').style.display = 'block';
+        document.getElementById('bloque-perfil').style.display = 'none';
+        document.querySelector('.btn-registro-nav').innerText = "Registro";
+    }
+
+    if(localStorage.getItem('dark_mode') === 'true') {
+        document.body.classList.add('dark-mode');
+        if(document.getElementById('toggle-dark')) document.getElementById('toggle-dark').checked = true;
+    }
+    if(localStorage.getItem('large_text') === 'true') {
+        document.body.classList.add('large-text');
+        if(document.getElementById('toggle-text')) document.getElementById('toggle-text').checked = true;
+    }
+    if(localStorage.getItem('lector_voz') === 'true') {
+        if(document.getElementById('toggle-voice')) document.getElementById('toggle-voice').checked = true;
+    }
+}
+
+// --- 8. GRÁFICA DE DISTRIBUCIÓN (DONA INTERACTIVA) ---
+
+function animateDonut(type) {
     const canvas = document.getElementById('donutChart');
-    if(!canvas) return;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const centerX = canvas.width / 2, centerY = canvas.height / 2, radius = 100;
-    let startAngle = -Math.PI / 2, sliceAngle1 = 2 * Math.PI * currentDraw;
-    
-    ctx.beginPath(); ctx.moveTo(centerX, centerY); ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle1);
-    ctx.fillStyle = currentTarget > 0.5 ? '#65a30d' : '#ef4444'; ctx.fill();
-    let sliceAngle2 = 2 * Math.PI * (1 - currentDraw);
-    ctx.beginPath(); ctx.moveTo(centerX, centerY); ctx.arc(centerX, centerY, radius, startAngle + sliceAngle1, startAngle + sliceAngle1 + sliceAngle2);
-    ctx.fillStyle = currentTarget > 0.5 ? '#d9f99d' : '#fecaca'; ctx.fill();
+    const w = canvas.width;
+    const h = canvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    const radius = Math.min(w, h) / 2 - 10;
 
-    const esOscuro = document.body.classList.contains('dark-mode');
-    ctx.beginPath(); ctx.arc(centerX, centerY, 65, 0, 2 * Math.PI);
-    ctx.fillStyle = esOscuro ? '#1e1e1e' : '#ffffff'; ctx.fill();
-    if (Math.abs(currentTarget - currentDraw) > 0.001) donutAnimation = requestAnimationFrame(drawFrame);
-}
+    // Limpiamos el lienzo para redibujar
+    ctx.clearRect(0, 0, w, h);
+    ctx.globalCompositeOperation = 'source-over';
 
-function updateLimit(price) {
-    const canvas = document.getElementById('limitCanvas');
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const costoProduccion = 42, yCosto = 150 - costoProduccion;
-    ctx.beginPath(); ctx.strokeStyle = '#ef4444'; ctx.setLineDash([5, 5]);
-    ctx.moveTo(0, yCosto); ctx.lineTo(250, yCosto); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = "#ef4444"; ctx.font = "12px Arial"; ctx.fillText("Límite (Costo)", 140, yCosto - 5);
-    const yPos = 150 - price;
-    ctx.beginPath(); ctx.strokeStyle = price >= costoProduccion ? '#65a30d' : '#ef4444'; ctx.lineWidth = 3;
-    ctx.moveTo(0, 150 - 80); ctx.lineTo(110, yPos); ctx.lineTo(250, yPos); ctx.stroke();
-    document.getElementById('limitVal').innerText = "$" + price;
-    const status = document.getElementById('limitStatus');
-    if(price < costoProduccion) { status.innerText = "ALERTA: PÉRDIDA"; status.style.color = "var(--danger)"; } 
-    else { status.innerText = "ESTADO: SEGURO"; status.style.color = "var(--primary)"; }
-}
+    // Ángulo para el Productor (30% en tradicional, 100% en justo)
+    let producerAngle = type === 'traditional' ? (0.3 * Math.PI * 2) : (Math.PI * 2);
 
-function updateDeriv(tVal) {
-    const canvas = document.getElementById('derivCanvas');
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.beginPath(); ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 3;
-    for(let x = 0; x <= 220; x++) { let y = 75 + Math.sin(x * 0.05) * 40; if(x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
-    ctx.stroke();
-    let xPoint = parseInt(tVal), yPoint = 75 + Math.sin(xPoint * 0.05) * 40;
-    let slope = Math.cos(xPoint * 0.05) * 2; 
-    ctx.beginPath(); ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2;
-    ctx.moveTo(xPoint - 40, yPoint - (slope * 40)); ctx.lineTo(xPoint + 40, yPoint + (slope * 40)); ctx.stroke();
-    ctx.beginPath(); ctx.fillStyle = '#1e3a8a'; ctx.arc(xPoint, yPoint, 6, 0, Math.PI*2); ctx.fill();
-    const status = document.getElementById('derivStatus'), formula = document.getElementById('derivFormula');
-    if (slope > 0.1) { status.innerText = "CRECIENTE"; status.style.color = "var(--primary)"; formula.innerText = "dP/dt = +" + slope.toFixed(2); formula.style.color = "#bef264"; } 
-    else if (slope < -0.1) { status.innerText = "DECRECIENTE"; status.style.color = "var(--danger)"; formula.innerText = "dP/dt = " + slope.toFixed(2); formula.style.color = "#fca5a5"; } 
-    else { status.innerText = "INFLEXIÓN"; status.style.color = "var(--accent)"; formula.innerText = "dP/dt ≈ 0"; formula.style.color = "#d8b4fe"; }
-}
-
-async function updateOpt(val) {
-    const canvas = document.getElementById('optCanvas');
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    ctx.beginPath(); ctx.strokeStyle = '#e9d5ff'; ctx.lineWidth = 3;
-    for(let x = 0; x <= 100; x += 2) {
-        let yCalc = -0.5 * Math.pow(x - 50, 2) + 1000;
-        if(x === 0) ctx.moveTo(x * 2.2, 150 - (yCalc / 10)); else ctx.lineTo(x * 2.2, 150 - (yCalc / 10));
+    // 1. Dibujar tajada del Coyote (Rojo)
+    if (type === 'traditional') {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, producerAngle, Math.PI * 2);
+        ctx.fillStyle = '#ef4444'; // var(--danger)
+        ctx.fill();
     }
-    ctx.stroke();
 
-    let profitLocal = -0.5 * Math.pow(val - 50, 2) + 1000;
-    let cx = val * 2.2; 
-    let cy = 150 - (profitLocal / 10);
-    
-    ctx.beginPath(); ctx.strokeStyle = '#a855f7'; ctx.setLineDash([4, 4]);
-    ctx.moveTo(cx, 150); ctx.lineTo(cx, cy); ctx.lineTo(0, cy); ctx.stroke(); ctx.setLineDash([]);
-    ctx.beginPath(); ctx.fillStyle = '#7e22ce'; ctx.arc(cx, cy, 6, 0, Math.PI*2); ctx.fill();
+    // 2. Dibujar tajada del Productor (Verde)
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, radius, 0, producerAngle);
+    ctx.fillStyle = '#16a34a'; // var(--primary)
+    ctx.fill();
 
-    document.getElementById('optVal').innerText = val + "kg";
-    const status = document.getElementById('optStatus');
-    const formula = document.getElementById('optFormula');
-    status.innerText = "Calculando en Python...";
-    formula.innerText = "...";
+    // 3. Hacer el hueco transparente del centro (para que sea una dona)
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 0.55, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
 
-    try {
-        const respuesta = await fetch(`${API_URL}/api/optimizar`, {
-            method: "POST", 
-            headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify({ kilos_ofrecidos: parseFloat(val) })
-        });
-        if (respuesta.ok) {
-            const datosServidor = await respuesta.json();
-            if (val == datosServidor.recomendacion_optima) {
-                status.innerText = `¡MÁXIMO!: $${datosServidor.ganancia_maxima_posible}`; status.style.color = "var(--accent)"; formula.innerText = `¡B'(${datosServidor.recomendacion_optima}) = 0!`; formula.style.color = "#d8b4fe";
-            } else {
-                status.innerText = `Python dice: $${datosServidor.beneficio_estimado}`; status.style.color = "var(--text-muted)"; formula.innerText = "B'(x) ≠ 0"; formula.style.color = "#bef264";
-            }
-        }
-    } catch (error) { 
-        status.innerText = `Estimado local: $${profitLocal}`; status.style.color = "var(--text-muted)"; formula.innerText = "Python desconectado"; formula.style.color = "var(--danger)";
+    // 4. Actualizar los porcentajes en texto
+    const textEl = document.getElementById('donutText');
+    if (type === 'traditional') {
+        textEl.innerHTML = "PRODUCTOR: 30% <br> <span style='color:var(--text-muted); font-size:1rem;'>INTERMEDIARIOS: 70%</span>";
+        textEl.style.color = "var(--danger)";
+    } else {
+        textEl.innerHTML = "PRODUCTOR: 100% <br> <span style='color:var(--text-muted); font-size:1rem;'>TRATO DIRECTO</span>";
+        textEl.style.color = "var(--primary)";
     }
 }
 
-// ==========================================
-// 5. INICIALIZACIÓN Y MODALES
-// ==========================================
-function abrirModalPago(accion, producto) {
-    document.getElementById('modalTitle').innerText = accion + " " + producto; document.getElementById('tarjetaForm').style.display = 'none'; document.getElementById('efectivoInfo').style.display = 'none'; document.getElementById('modalPago').classList.add('active');
-}
-function cerrarModal() { document.getElementById('modalPago').classList.remove('active'); }
-function cerrarModalSiFuera(e) { if (e.target.id === 'modalPago') cerrarModal(); }
-function mostrarFormularioTarjeta() { document.getElementById('tarjetaForm').style.display = 'block'; document.getElementById('efectivoInfo').style.display = 'none'; }
-function mostrarInfoEfectivo() { document.getElementById('efectivoInfo').style.display = 'block'; document.getElementById('tarjetaForm').style.display = 'none'; }
-function simularTransaccion() { alert("¡Operación procesada con éxito!"); cerrarModal(); }
+// --- 7. INICIALIZADOR PRINCIPAL ---
 
-window.onload = () => {
-    cargarAjustesGuardados();
-    verificarSesion();
-    const prodGuardado = localStorage.getItem('agroJusto_venta');
-    if(prodGuardado) { agregarProductoAlCatalogo(JSON.parse(prodGuardado)); }
-    drawFrame();
-};
+function cargarTodo() {
+    cargarAjustes();
+    renderizarCatalogo();
+    
+    // Inicializar gráficas de mercado
+    updateLimit(document.getElementById('limitRange') ? document.getElementById('limitRange').value : 60);
+    updateDeriv(document.getElementById('derivRange') ? document.getElementById('derivRange').value : 50);
+    sincronizarOpt(document.getElementById('optInput') ? document.getElementById('optInput').value : 100);
+
+    // Iniciar animación de la dona (Carga visual inicial)
+    setTimeout(() => animateDonut('traditional'), 200);
+
+    // Activar PWA (Service Worker)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js');
+    }
+}
