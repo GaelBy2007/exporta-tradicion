@@ -15,10 +15,11 @@
     <link rel="stylesheet" href="styles.css">
 
     <style>
+        /* ESTILOS DE ACCESIBILIDAD Y SWITCHES */
         .large-text { font-size: 1.25rem !important; }
         .large-text h1 { font-size: 3.2rem !important; }
         .large-text h2 { font-size: 2.5rem !important; }
-        .large-text p, .large-text button, .large-text input { font-size: 1.3rem !important; }
+        .large-text p, .large-text button, .large-text input, .large-text label, .large-text select { font-size: 1.3rem !important; }
 
         .dark-mode { background-color: #1c1917 !important; color: #f5f5f4 !important; }
         .dark-mode .card, .dark-mode .modal-content { background-color: #262626 !important; color: white !important; border: 1px solid #444; }
@@ -28,17 +29,22 @@
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
         input:checked + .slider { background-color: var(--primary, #16a34a); }
-        .ajuste-item { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #eee; }
+        .ajuste-item { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #eee; align-items: center;}
         .dark-mode .ajuste-item { border-bottom: 1px solid #444; }
 
-        /* Estilos de Tabla Admin */
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; }
-        .admin-table th, .admin-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        .admin-table th { background-color: var(--primary, #16a34a); color: white; }
-        .dark-mode .admin-table th, .dark-mode .admin-table td { border: 1px solid #555; }
+        /* TABLAS PARA MERCADO Y ADMIN */
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; text-align: left; }
+        .data-table th, .data-table td { border: 1px solid #ddd; padding: 12px; }
+        .data-table th { background-color: var(--primary, #16a34a); color: white; }
+        .dark-mode .data-table th, .dark-mode .data-table td { border: 1px solid #555; }
+        .data-table tr:nth-child(even) { background-color: rgba(0,0,0,0.02); }
+        .dark-mode .data-table tr:nth-child(even) { background-color: rgba(255,255,255,0.05); }
+
+        .view { display: none; }
+        .view.active { display: block; }
     </style>
 </head>
-<body onload="cargarAjustes()">
+<body onload="cargarTodo()">
 
     <nav>
         <div class="nav-container">
@@ -49,8 +55,8 @@
                 <button onclick="navegar('vista-tienda')">Mercado</button>
                 <button onclick="navegar('vista-registro-venta')">Vender</button>
                 <button onclick="navegar('vista-registro')" class="btn-registro-nav" style="color: var(--primary);">Registro</button>
-                <button onclick="navegar('vista-ajustes')" style="color: var(--primary); font-size: 1.2rem;" title="Ajustes">⚙️</button>
-                <button onclick="navegar('vista-admin')" style="color: var(--danger); font-weight: bold; font-size: 1.1rem;">Admin 🔒</button>
+                <button onclick="navegar('vista-ajustes')" style="color: var(--primary); font-size: 1.2rem;" title="Ajustes de Accesibilidad">⚙️</button>
+                <button onclick="navegar('vista-admin')" style="color: var(--danger); font-weight: bold; margin-left: 10px;">Admin 🔒</button>
             </div>
         </div>
     </nav>
@@ -80,15 +86,14 @@
                     <div class="card">
                         <h3>Distribución de Ganancias</h3>
                         <p>En el mercado tradicional, el coyotaje absorbe el valor de la cosecha. Al aplicar nuestro modelo matemático, el pequeño productor recupera su margen legítimo.</p>
-                        
                         <div style="margin-top:30px; display:flex; gap:15px; flex-direction:column;">
-                            <button class="btn" style="background:#fee2e2; color:#b91c1c;" onclick="animateDonut('traditional')">VER MODELO TRADICIONAL</button>
-                            <button class="btn" style="background:#d9f99d; color:#365314;" onclick="animateDonut('fair')">VER MODELO EXPORTA TRADICIÓN</button>
+                            <button class="btn" style="background:#fee2e2; color:#b91c1c;" onclick="animateDonut('traditional')">Ver Modelo Tradicional</button>
+                            <button class="btn" style="background:#d9f99d; color:#365314;" onclick="animateDonut('fair')">Ver Modelo Exporta Tradición</button>
                         </div>
                     </div>
-                    <div class="card" style="display:flex; justify-content:center; align-items:center; flex-direction:column;">
-                        <canvas id="donutChart" width="250" height="250"></canvas>
-                        <p id="donutText" style="margin-top:20px; font-weight:bold; font-size: 1.2rem; color: var(--danger);">PRODUCTOR: 30%</p>
+                    <div class="card" style="display:flex; justify-content:center; align-items:center; flex-direction:column; text-align: center;">
+                        <canvas id="donutChart" width="220" height="220"></canvas>
+                        <p id="donutText" style="margin-top:20px; font-weight:bold; font-size: 1.4rem; color: var(--danger);">El productor merece más</p>
                     </div>
                 </div>
             </div>
@@ -103,12 +108,12 @@
             <div class="card" style="max-width: 900px; margin: 0 auto 40px;">
                 <h3 style="color: var(--primary-dark); margin-bottom: 15px; font-size: 1.5rem;">Nuestra Misión</h3>
                 <p style="font-size: 1.05rem; margin-bottom: 25px;">
-                    Buscamos erradicar el "coyotaje" y las prácticas de intermediarios que absorben el valor del trabajo agrícola. Nuestro objetivo es devolverle el control al pequeño productor.
+                    Buscamos erradicar el "coyotaje" y las prácticas de intermediarios que absorben el valor del trabajo agrícola. Nuestro objetivo es devolverle el control al pequeño productor, asegurando que su esfuerzo sea recompensado de manera justa.
                 </p>
 
                 <h3 style="color: var(--secondary); margin-bottom: 15px; font-size: 1.5rem;">¿Qué nos mueve?</h3>
                 <p style="font-size: 1.05rem; margin-bottom: 25px;">
-                    Exporta Tradición nace de la necesidad de aplicar la tecnología y el cálculo matemático creando un ecosistema donde las matemáticas protegen al trabajador.
+                    Sabemos que en el campo está la verdadera riqueza de nuestra región. Exporta Tradición nace de la necesidad de aplicar la tecnología y el cálculo matemático creando un ecosistema donde las matemáticas protegen al trabajador.
                 </p>
 
                 <div class="grid-3" style="margin-top: 40px; grid-template-columns: 1fr 1fr;">
@@ -132,13 +137,26 @@
                 <div class="underline"></div>
             </div>
             <div class="card" style="max-width: 600px; margin: 0 auto;">
+                
                 <div id="bloque-formulario">
                     <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Regístrate para comprar o vender productos sin intermediarios.</p>
                     <form id="form-registro-general" onsubmit="guardarRegistroGeneral(event)">
-                        <div class="form-group"><label>Nombre</label><input type="text" id="reg-nombre" required placeholder="Ej. Juan"></div>
-                        <div class="form-group"><label>Apellido</label><input type="text" id="reg-apellido" required placeholder="Ej. Pérez"></div>
-                        <div class="form-group"><label>Localización (Ciudad o Municipio)</label><input type="text" id="reg-localizacion" required placeholder="Ej. Tapachula, Chiapas"></div>
-                        <div class="form-group"><label>Número de Teléfono</label><input type="tel" id="reg-telefono" required placeholder="Ej. 962 123 4567"></div>
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" id="reg-nombre" required placeholder="Ej. Juan">
+                        </div>
+                        <div class="form-group">
+                            <label>Apellido</label>
+                            <input type="text" id="reg-apellido" required placeholder="Ej. Pérez">
+                        </div>
+                        <div class="form-group">
+                            <label>Localización (Ciudad o Municipio)</label>
+                            <input type="text" id="reg-localizacion" required placeholder="Ej. Tapachula, Chiapas">
+                        </div>
+                        <div class="form-group">
+                            <label>Número de Teléfono</label>
+                            <input type="tel" id="reg-telefono" required placeholder="Ej. 962 123 4567">
+                        </div>
                         <button type="submit" class="btn" style="width: 100%; margin-top: 15px;">Guardar y Continuar al Mercado</button>
                     </form>
                 </div>
@@ -146,9 +164,12 @@
                 <div id="bloque-perfil" style="display: none; text-align: center; padding: 20px;">
                     <div style="font-size: 5rem; margin-bottom: 15px;">👤</div>
                     <h3 id="texto-bienvenida" style="font-size: 1.8rem; color: var(--primary-dark); margin-bottom: 10px;">¡Hola!</h3>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px;">Tu sesión está activa. Ya puedes vender y comprar libremente.</p>
+                    
                     <button class="btn" onclick="navegar('vista-tienda')" style="width: 100%; margin-bottom: 15px; background: var(--secondary);">Ir al Mercado</button>
-                    <button class="btn" onclick="cerrarSesion()" style="width: 100%; background: var(--danger); opacity: 0.9;">🚪 Cerrar Sesión</button>
+                    <button class="btn" onclick="cerrarSesion()" style="width: 100%; background: var(--danger); opacity: 0.9;">🚪 Cerrar Sesión / Agregar otra cuenta</button>
                 </div>
+
             </div>
         </section>
 
@@ -158,97 +179,182 @@
                 <div class="underline"></div>
             </div>
             <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Ingresa los datos para publicarlo en el mercado local.</p>
                 <form id="form-registro-venta" onsubmit="guardarRegistroVenta(event)">
-                    <div class="form-group"><label>Nombre del Productor o Finca</label><input type="text" id="ven-nombre" required placeholder="Ej. Finca La Esperanza"></div>
-                    <div class="form-group"><label>Ubicación de la Parcela</label><input type="text" id="ven-ubicacion" required placeholder="Ej. Ejido El Edén"></div>
-                    <div class="form-group"><label>Producto que deseas vender</label><input type="text" id="ven-producto" required placeholder="Ej. Café, Maíz, Miel, Cacao"></div>
-                    <div class="form-group"><label>Precio de venta directo al público ($)</label><input type="number" id="ven-precio" required placeholder="Ej. 180"></div>
+                    <div class="form-group">
+                        <label>Nombre del Vendedor o Finca</label>
+                        <input type="text" id="ven-nombre" required placeholder="Ej. Finca La Esperanza o Juan Pérez">
+                    </div>
+                    <div class="form-group">
+                        <label>Ubicación de la Parcela</label>
+                        <input type="text" id="ven-ubicacion" required placeholder="Ej. Ejido El Edén">
+                    </div>
+                    <div class="form-group">
+                        <label>Producto que deseas vender</label>
+                        <input type="text" id="ven-producto" required placeholder="Ej. Café, Maíz, Miel, Cacao">
+                    </div>
+                    
+                    <div class="grid-3" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>Cantidad Disponible</label>
+                            <input type="number" id="ven-cantidad" required placeholder="Ej. 50">
+                        </div>
+                        <div class="form-group">
+                            <label>Unidad de medida</label>
+                            <select id="ven-unidad" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit;">
+                                <option value="Kilos">Kilos (kg)</option>
+                                <option value="Gramos">Gramos (g)</option>
+                                <option value="Toneladas">Toneladas (t)</option>
+                                <option value="Litros">Litros (L)</option>
+                                <option value="Cajas">Cajas</option>
+                                <option value="Piezas">Piezas / Unidades</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Precio total o por unidad ($)</label>
+                        <input type="number" id="ven-precio" required placeholder="Ej. 180">
+                    </div>
                     <button type="submit" class="btn" style="width: 100%; margin-top: 15px; background: var(--accent);">Publicar Producto</button>
                 </form>
             </div>
         </section>
 
         <section id="vista-tienda" class="view">
+            
             <div class="section-title" style="margin-top: 40px;">
                 <h2>Mercado Exporta Tradición</h2>
+                <p style="color: var(--text-muted); max-width: 600px; margin: 10px auto; font-size: 1.1rem; text-align: center;">Tu panel de control integral. Ajusta tus variables de venta usando matemáticas y explora el catálogo local.</p>
                 <div class="underline"></div>
             </div>
             
-            <div style="background: var(--bg-card); padding: 30px; border-radius: 20px; margin-bottom: 40px;">
-                <h3 style="text-align: center; margin-bottom: 30px; color: var(--primary-dark);">⚙️ Panel Analítico del Productor (Matemáticas Aplicadas)</h3>
+            <div style="background: var(--bg-card); padding: 30px; border-radius: 20px; border: 1px solid var(--border-color); margin-bottom: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+                <h3 style="text-align: center; margin-bottom: 30px; color: var(--primary-dark);">⚙️ Panel Analítico del Productor</h3>
                 <div class="grid-3">
-                    <div class="card" style="box-shadow: none; border: 1px dashed var(--border-color);">
+                    
+                    <div class="card reveal active" style="box-shadow: none; border: 1px dashed var(--border-color);">
                         <h3>Límite de Protección</h3>
-                        <canvas id="limitCanvas" width="220" height="150"></canvas>
+                        <div class="math-box" style="font-size: 0.9rem; text-align:center; margin-bottom:10px; font-weight:bold;">lim (t→a) P(t) ≥ Costo</div>
+                        <div style="display:flex; justify-content:center;"><canvas id="limitCanvas" width="220" height="150"></canvas></div>
                         <div class="controls">
-                            <input type="range" id="limitRange" min="20" max="100" value="60" oninput="updateLimit(this.value)" style="width: 100%;">
-                            <span id="limitStatus" class="status-badge" style="color:var(--primary); font-weight:bold; display:block; margin-top:10px;">SEGURO: $60</span>
+                            <div class="slider-label" style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Precio Simulado</span> <span id="limitVal" style="font-weight:bold;">$60</span></div>
+                            <input type="range" id="limitRange" min="20" max="100" value="60" style="width:100%;" oninput="updateLimit(this.value)">
+                            <span id="limitStatus" class="status-badge" style="color:var(--primary); font-weight:bold; display:block; margin-top:10px;">ESTADO: SEGURO</span>
                         </div>
                     </div>
-                    <div class="card" style="box-shadow: none; border: 1px dashed var(--border-color);">
+
+                    <div class="card reveal active" style="box-shadow: none; border: 1px dashed var(--border-color);">
                         <h3>Derivada de Demanda</h3>
-                        <canvas id="derivCanvas" width="220" height="150"></canvas>
+                        <div class="math-box" id="derivFormula" style="font-size: 0.9rem; text-align:center; margin-bottom:10px; font-weight:bold;">dP/dt = Pendiente</div>
+                        <div style="display:flex; justify-content:center;"><canvas id="derivCanvas" width="220" height="150"></canvas></div>
                         <div class="controls">
-                            <input type="range" id="derivRange" min="0" max="100" value="50" oninput="updateDeriv(this.value)" style="width: 100%;">
-                            <span id="derivStatus" class="status-badge" style="color:var(--secondary); font-weight:bold; display:block; margin-top:10px;">ESTABLE: 50%</span>
+                            <div class="slider-label" style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Tiempo (t)</span> <span id="derivVal" style="font-weight:bold;">50%</span></div>
+                            <input type="range" id="derivRange" min="0" max="100" value="50" style="width:100%;" oninput="updateDeriv(this.value)">
+                            <span id="derivStatus" class="status-badge" style="color:var(--secondary); font-weight:bold; display:block; margin-top:10px;">ESTABLE</span>
                         </div>
                     </div>
-                    <div class="card" style="box-shadow: none; border: 1px dashed var(--border-color);">
-                        <h3>Optimización de Ganancia</h3>
-                        <canvas id="optCanvas" width="220" height="150"></canvas>
+
+                    <div class="card reveal active" style="box-shadow: none; border: 1px dashed var(--border-color); background: rgba(168, 85, 247, 0.05);">
+                        <h3 style="color: var(--accent);">Optimización de Ganancia</h3>
+                        <div class="math-box" id="optFormula" style="font-size: 0.9rem; text-align:center; margin-bottom:10px; font-weight:bold;">B'(x) = 0</div>
+                        <div style="display:flex; justify-content:center;"><canvas id="optCanvas" width="220" height="150"></canvas></div>
                         <div class="controls">
-                            <input type="range" id="optRange" min="10" max="1000" value="100" oninput="updateOpt(this.value)" style="width: 100%;">
-                            <span id="optStatus" class="status-badge" style="color:var(--accent); font-weight:bold; display:block; margin-top:10px;">Beneficio: $1,250</span>
+                            <label style="font-size: 0.9rem; display: block; margin-bottom: 5px; color: var(--text-muted);">Kilogramos a vender:</label>
+                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                                <input type="number" id="optInput" min="0" max="1000" value="100" oninput="sincronizarOpt(this.value)" style="width: 80px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem;">
+                                <span style="font-size: 0.9rem; font-weight: bold;">kg</span>
+                            </div>
+                            <input type="range" id="optRange" min="0" max="1000" value="100" style="width:100%;" oninput="sincronizarOpt(this.value)">
+                            <span id="optStatus" class="status-badge" style="color:var(--accent); font-weight:bold; display:block; margin-top:10px;">Beneficio: $0</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <h3 style="margin-bottom: 20px; font-size: 1.8rem;">Catálogo Disponible</h3>
-            <div class="grid-3" id="catalogo-productos"></div>
+            <h3 style="margin-bottom: 20px; font-size: 1.8rem; color: var(--text-main);">Catálogo Disponible</h3>
+            <div class="card" style="overflow-x: auto; padding: 0;">
+                <div id="catalogo-productos"></div>
+            </div>
         </section>
 
         <section id="vista-admin" class="view">
-            <div class="section-title" style="margin-top: 40px;"><h2>Panel de Administrador</h2><div class="underline"></div></div>
+            <div class="section-title" style="margin-top: 40px;">
+                <h2>Panel de Administrador</h2>
+                <div class="underline"></div>
+            </div>
             
             <div class="card" id="admin-login-box" style="max-width: 400px; margin: 0 auto;">
                 <h3 style="text-align:center; color: var(--danger);">Acceso Restringido</h3>
-                <p style="text-align:center; font-size:0.9rem;">Solo para autores del proyecto.</p>
-                <div class="form-group"><label>Nombre Completo</label><input type="text" id="admin-user" placeholder="Ej. Gael Jesús..."></div>
-                <div class="form-group"><label>Contraseña</label><input type="password" id="admin-pass" placeholder="******"></div>
+                <p style="text-align:center; font-size:0.9rem; margin-bottom: 20px;">Solo para autores del proyecto.</p>
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="admin-user" placeholder="Ej. Gael Jesús Marroquín...">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="admin-pass" placeholder="******">
+                </div>
                 <button class="btn" style="width:100%; background:var(--danger);" onclick="loginAdmin()">Ingresar</button>
             </div>
 
-            <div class="card" id="admin-dashboard" style="display:none; max-width: 900px; margin: 0 auto; overflow-x:auto;">
-                <h3 style="color: var(--primary);">Base de Datos de Cosechas</h3>
-                <p>Aquí puedes ver y gestionar las solicitudes de los agricultores.</p>
-                <button class="btn" style="background:var(--secondary); margin-bottom: 15px;" onclick="cerrarAdmin()">Cerrar Admin</button>
-                <div id="tabla-bd"></div>
+            <div class="card" id="admin-dashboard" style="display:none; max-width: 1000px; margin: 0 auto;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <h3 style="color: var(--primary); margin: 0;">Base de Datos Global de Cosechas</h3>
+                    <button class="btn" style="background:var(--secondary); padding: 8px 15px;" onclick="cerrarAdmin()">Cerrar Admin</button>
+                </div>
+                <p style="margin-bottom: 15px;">Aquí se registran todas las compras y ventas de las personas.</p>
+                <div style="overflow-x: auto;">
+                    <div id="tabla-solicitudes"></div>
+                </div>
             </div>
         </section>
 
         <section id="vista-ajustes" class="view">
             <div class="section-title" style="margin-top: 40px;">
-                <h2>Accesibilidad</h2>
+                <h2>Ajustes de Accesibilidad</h2>
                 <div class="underline"></div>
             </div>
+            
             <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Personaliza tu experiencia en Exporta Tradición.</p>
+
                 <div class="ajuste-item">
-                    <span>🌙 Modo Oscuro</span>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span style="font-size: 2rem;">🌙</span>
+                        <div>
+                            <h3 style="margin: 0; margin-bottom: 5px;">Modo Oscuro</h3>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Protege tu vista en ambientes oscuros.</p>
+                        </div>
+                    </div>
                     <label class="toggle-switch">
                         <input type="checkbox" id="toggle-dark" onchange="toggleDarkMode()">
                         <span class="slider"></span>
                     </label>
                 </div>
+
                 <div class="ajuste-item">
-                    <span>🔎 Texto Grande</span>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span style="font-size: 2rem;">🔎</span>
+                        <div>
+                            <h3 style="margin: 0; margin-bottom: 5px;">Texto Grande</h3>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Aumenta el tamaño de la letra.</p>
+                        </div>
+                    </div>
                     <label class="toggle-switch">
                         <input type="checkbox" id="toggle-text" onchange="toggleLargeText()">
                         <span class="slider"></span>
                     </label>
                 </div>
+
                 <div class="ajuste-item" style="border-bottom: none;">
-                    <span>🔊 Lector de Voz</span>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span style="font-size: 2rem;">🔊</span>
+                        <div>
+                            <h3 style="margin: 0; margin-bottom: 5px;">Voz Automática</h3>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">El sistema leerá la página automáticamente.</p>
+                        </div>
+                    </div>
                     <label class="toggle-switch">
                         <input type="checkbox" id="toggle-voice" onchange="toggleLectorVoz()">
                         <span class="slider"></span>
@@ -262,204 +368,26 @@
     <footer>
         <div class="hero-content">
             <h2 style="margin-bottom:20px; color: var(--header-text);">Hacia una Economía Agraria Sostenible</h2>
+            <p style="font-size: 1rem; color: #a8a29e;">Utilizando las matemáticas para devolverle el valor a quien verdaderamente trabaja la tierra.</p>
             <div style="margin-top:40px; font-size:0.9rem; color: #a8a29e; line-height: 1.8;">
                 <p style="opacity: 0.8; margin-bottom: 10px;">© 2026 Exporta Tradición</p>
-                <p><strong>Autores:</strong><br>
-                Gael Jesús Marroquín Mateo<br>Oscar Toledo Carrascosa<br>Nelly Jackeline Chirino Ortiz<br>Julio Cesar Meridad Ramírez<br>Crhistopher Alexander Molina Hernández</p>
+                <p><strong>Desarrolladores y Autores:</strong><br>
+                Gael Jesús Marroquín Mateo, Oscar Toledo Carrascosa, Nelly Jackeline Chirino Ortiz, Julio Cesar Meridad Ramírez, Crhistopher Alexander Molina Hernández y Leo Ronay Velazquez Gutierrez.</p>
             </div>
         </div>
     </footer>
 
     <div id="modalPago" class="modal-overlay" onclick="cerrarModalSiFuera(event)">
         <div class="modal-content">
-            <span class="close-modal" onclick="cerrarModal()">&times;</span>
-            <h3 id="modalTitle">Comprar Producto</h3>
+            <span class="close-modal" onclick="document.getElementById('modalPago').style.display='none'">&times;</span>
+            <h3 id="modalTitle" style="font-size: 1.4rem; color: var(--text-main);">Comprar Producto</h3>
             <div id="efectivoInfo" style="display: block; margin-top: 25px; background: rgba(132, 204, 22, 0.1); padding: 20px; border-radius: 12px; border: 1px solid var(--primary);">
-                <p style="color: var(--primary-dark); font-weight: bold;">¡Trato directo sin intermediarios!</p>
-                <a href="tel:+529621474370" style="display: inline-block; margin-top: 15px; font-weight: bold; color: white; background: var(--primary); text-decoration: none; padding: 10px 20px; border-radius: 20px;">📞 Llamar al Productor</a>
+                <p style="color: var(--primary-dark); font-weight: bold; margin-bottom: 8px;">¡Trato directo sin coyotes!</p>
+                <a href="tel:+5219621474370" style="display: inline-block; margin-top: 15px; font-weight: bold; color: white; background: var(--primary); text-decoration: none; padding: 10px 20px; border-radius: 20px;">📞 Llamar al Productor</a>
             </div>
         </div>
     </div>
 
-    <script>
-        // 1. NAVEGACIÓN Y VOZ
-        function navegar(id) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            const vista = document.getElementById(id);
-            vista.classList.add('active');
-            window.scrollTo(0,0);
-
-            if(id === 'vista-admin') verificarEstadoAdmin();
-
-            if(localStorage.getItem('lector_voz') === 'true') {
-                window.speechSynthesis.cancel();
-                const texto = vista.innerText.substring(0, 300);
-                const speech = new SpeechSynthesisUtterance(texto);
-                speech.lang = 'es-MX';
-                window.speechSynthesis.speak(speech);
-            }
-        }
-
-        // 2. SLIDERS MATEMÁTICOS
-        function updateLimit(val) {
-            const status = document.getElementById('limitStatus');
-            status.innerText = val >= 50 ? "SEGURO: $" + val : "RIESGO DE PÉRDIDA: $" + val;
-            status.style.color = val >= 50 ? "var(--primary)" : "red";
-        }
-        function updateDeriv(val) {
-            const status = document.getElementById('derivStatus');
-            status.innerText = val > 70 ? "ALTA DEMANDA: " + val + "%" : "ESTABLE: " + val + "%";
-            status.style.color = val > 70 ? "var(--accent)" : "var(--secondary)";
-        }
-        function updateOpt(val) {
-            let ganancia = (val * 12.5).toLocaleString('es-MX');
-            document.getElementById('optStatus').innerText = "Beneficio Estimado: $" + ganancia;
-        }
-
-        // 3. BASE DE DATOS LOCAL Y FORMULARIO DE VENTA
-        function guardarRegistroVenta(e) {
-            e.preventDefault();
-            const productor = document.getElementById('ven-nombre').value;
-            const ubicacion = document.getElementById('ven-ubicacion').value;
-            const producto = document.getElementById('ven-producto').value;
-            const precio = document.getElementById('ven-precio').value;
-
-            const nuevaVenta = { id: Date.now(), productor, ubicacion, producto, precio };
-            let bd = JSON.parse(localStorage.getItem('bd_ventas')) || [];
-            bd.push(nuevaVenta);
-            localStorage.setItem('bd_ventas', JSON.stringify(bd));
-
-            alert("Cosecha registrada con éxito. Pendiente de revisión del administrador.");
-            e.target.reset();
-            navegar('vista-inicio');
-        }
-
-        // 4. MODO ADMINISTRADOR (CONTRASEÑA: 253044)
-        const equipo = ["Gael Jesús Marroquín Mateo", "Oscar Toledo Carrascosa", "Nelly Jackeline Chirino Ortiz", "Julio Cesar Meridad Ramírez", "Crhistopher Alexander Molina Hernández"];
-
-        function loginAdmin() {
-            const user = document.getElementById('admin-user').value.trim();
-            const pass = document.getElementById('admin-pass').value;
-
-            let esMiembro = equipo.some(miembro => miembro.toLowerCase() === user.toLowerCase());
-
-            if ((esMiembro || user.toLowerCase().includes('gael')) && pass === '253044') {
-                localStorage.setItem('admin_logueado', 'true');
-                verificarEstadoAdmin();
-            } else {
-                alert("Acceso Denegado. Nombre o contraseña incorrectos.");
-            }
-        }
-
-        function verificarEstadoAdmin() {
-            if (localStorage.getItem('admin_logueado') === 'true') {
-                document.getElementById('admin-login-box').style.display = 'none';
-                document.getElementById('admin-dashboard').style.display = 'block';
-                cargarTablaAdmin();
-            } else {
-                document.getElementById('admin-login-box').style.display = 'block';
-                document.getElementById('admin-dashboard').style.display = 'none';
-            }
-        }
-
-        function cerrarAdmin() {
-            localStorage.removeItem('admin_logueado');
-            verificarEstadoAdmin();
-        }
-
-        function cargarTablaAdmin() {
-            const contenedor = document.getElementById('tabla-bd');
-            let bd = JSON.parse(localStorage.getItem('bd_ventas')) || [];
-
-            if (bd.length === 0) {
-                contenedor.innerHTML = "<p style='color:gray;'>No hay registros de cosechas todavía.</p>";
-                return;
-            }
-
-            let html = '<table class="admin-table"><tr><th>Productor</th><th>Producto</th><th>Precio</th><th>Ubicación</th><th>Acción</th></tr>';
-            bd.forEach(item => {
-                html += `<tr>
-                    <td>${item.productor}</td>
-                    <td>${item.producto}</td>
-                    <td>$${item.precio}</td>
-                    <td>${item.ubicacion}</td>
-                    <td><button onclick="borrarRegistro(${item.id})" style="background:var(--danger); color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">Borrar</button></td>
-                </tr>`;
-            });
-            html += '</table>';
-            contenedor.innerHTML = html;
-        }
-
-        function borrarRegistro(id) {
-            if(confirm("¿Seguro que deseas eliminar este registro?")) {
-                let bd = JSON.parse(localStorage.getItem('bd_ventas')) || [];
-                bd = bd.filter(item => item.id !== id);
-                localStorage.setItem('bd_ventas', JSON.stringify(bd));
-                cargarTablaAdmin();
-            }
-        }
-
-        // 5. SESIÓN DE USUARIO Y ACCESIBILIDAD
-        function guardarRegistroGeneral(e) {
-            e.preventDefault();
-            const nombre = document.getElementById('reg-nombre').value;
-            localStorage.setItem('sesion_exporta', nombre);
-            cargarAjustes();
-            navegar('vista-inicio');
-        }
-
-        function cerrarSesion() {
-            localStorage.removeItem('sesion_exporta');
-            location.reload();
-        }
-
-        function toggleDarkMode() {
-            const activo = document.body.classList.toggle('dark-mode');
-            localStorage.setItem('dark_mode', activo);
-        }
-
-        function toggleLargeText() {
-            const activo = document.body.classList.toggle('large-text');
-            localStorage.setItem('large_text', activo);
-        }
-
-        function toggleLectorVoz() {
-            const activo = document.getElementById('toggle-voice').checked;
-            localStorage.setItem('lector_voz', activo);
-            if(!activo) window.speechSynthesis.cancel();
-        }
-
-        function cargarAjustes() {
-            const user = localStorage.getItem('sesion_exporta');
-            if(user) {
-                document.getElementById('bloque-formulario').style.display = 'none';
-                document.getElementById('bloque-perfil').style.display = 'block';
-                document.getElementById('texto-bienvenida').innerText = "¡Hola, " + user + "!";
-                document.querySelector('.btn-registro-nav').innerText = "Perfil: " + user;
-            } else {
-                document.getElementById('bloque-formulario').style.display = 'block';
-                document.getElementById('bloque-perfil').style.display = 'none';
-                document.querySelector('.btn-registro-nav').innerText = "Registro";
-            }
-
-            if(localStorage.getItem('dark_mode') === 'true') {
-                document.body.classList.add('dark-mode');
-                if(document.getElementById('toggle-dark')) document.getElementById('toggle-dark').checked = true;
-            }
-            if(localStorage.getItem('large_text') === 'true') {
-                document.body.classList.add('large-text');
-                if(document.getElementById('toggle-text')) document.getElementById('toggle-text').checked = true;
-            }
-            if(localStorage.getItem('lector_voz') === 'true') {
-                if(document.getElementById('toggle-voice')) document.getElementById('toggle-voice').checked = true;
-            }
-        }
-
-        // 6. SERVICE WORKER
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
-        }
-    </script>
     <script src="script.js"></script>
 </body>
 </html>
