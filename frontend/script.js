@@ -263,7 +263,6 @@ const equipo = [
     "Nelly Jackeline Chirino Ortiz", 
     "Julio Cesar Meridad Ramírez", 
     "Crhistopher Alexander Molina Hernández",
-    "Leo Ronay Velazquez Gutierrez"
 ];
 
 function loginAdmin() {
