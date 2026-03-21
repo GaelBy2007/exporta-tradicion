@@ -1,0 +1,132 @@
+/* CSS - Implementado con Variables Dinámicas para Modo Oscuro y Texto Grande */
+:root {
+    --primary: #65a30d; 
+    --primary-dark: #4d7c0f; 
+    --secondary: #3b82f6;
+    --accent: #a855f7; 
+    --danger: #ef4444; 
+
+    --bg-body: #fafaf9;
+    --bg-card: #ffffff;
+    --text-main: #292524;
+    --text-muted: #78716c;
+    --border-color: #e7e5e4;
+    --header-bg: #1c1917;
+    --header-text: #ffffff;
+    --nav-bg: rgba(255, 255, 255, 0.9);
+}
+
+/* MODO OSCURO */
+body.dark-mode {
+    --bg-body: #121212;
+    --bg-card: #1e1e1e;
+    --text-main: #f5f5f5;
+    --text-muted: #a3a3a3;
+    --border-color: #333333;
+    --header-bg: #0a0a0a;
+    --header-text: #ffffff;
+    --nav-bg: rgba(30, 30, 30, 0.9);
+    --primary-dark: #84cc16; 
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background-color: var(--bg-body); 
+    color: var(--text-main); 
+    line-height: 1.6; 
+    overflow-x: hidden; 
+    transition: background-color 0.3s, color 0.3s, font-size 0.3s;
+    font-size: 16px; 
+}
+
+/* TEXTO GRANDE */
+body.large-text { font-size: 20px; }
+body.large-text h1 { font-size: 4rem; }
+body.large-text h2 { font-size: 3rem; }
+body.large-text h3 { font-size: 1.8rem; }
+body.large-text .btn { font-size: 1.1rem; }
+body.large-text .nav-links button { font-size: 1.15rem; }
+
+/* SPA */
+.view { display: none; animation: fadeInView 0.5s ease-in-out; }
+.view.active { display: block; }
+@keyframes fadeInView { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Navegación */
+nav { background: var(--nav-bg); backdrop-filter: blur(10px); height: 70px; display: flex; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border-color); padding: 0 2rem; transition: background-color 0.3s, border-color 0.3s; }
+.nav-container { max-width: 1200px; margin: 0 auto; width: 100%; display: flex; justify-content: space-between; align-items: center; }
+.logo { font-size: 1.5rem; font-weight: bold; color: var(--text-main); }
+.logo span { color: var(--primary); }
+.nav-links { display: flex; gap: 2rem; }
+.nav-links button { background: none; border: none; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: color 0.3s, font-size 0.3s; font-size: 1rem; }
+.nav-links button:hover { color: var(--primary); }
+
+/* Header */
+header { background: var(--header-bg); color: var(--header-text); padding: 120px 20px; text-align: center; transition: background-color 0.3s; }
+.hero-content { max-width: 800px; margin: 0 auto; }
+header h1 { font-size: 3.5rem; margin-bottom: 1.5rem; line-height: 1.1; transition: font-size 0.3s;}
+header h1 span { color: var(--primary); }
+header p { font-size: 1.25rem; color: #a8a29e; margin-bottom: 2.5rem; }
+.btn { border: none; color: white; padding: 15px 30px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: transform 0.2s, opacity 0.2s, font-size 0.3s; text-transform: uppercase; background: var(--primary); }
+.btn:hover { transform: scale(1.05); opacity: 0.9; }
+
+/* Contenedores */
+main { max-width: 1200px; margin: 40px auto; padding: 0 20px; min-height: 60vh;}
+.section-title { text-align: center; margin-bottom: 50px; }
+.section-title h2 { font-size: 2.5rem; margin-bottom: 10px; color: var(--text-main); transition: font-size 0.3s;}
+.underline { width: 60px; height: 5px; background: var(--primary); margin: 0 auto; border-radius: 10px; }
+
+/* Tarjetas */
+.grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+.card { background: var(--bg-card); border-radius: 20px; padding: 40px; border: 1px solid var(--border-color); transition: all 0.3s; position: relative; overflow: hidden; color: var(--text-main); }
+.card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-color: var(--primary); }
+.icon-circle { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 20px; font-size: 1.2rem; }
+.math-box { background: #1c1917; color: #bef264; padding: 15px; border-radius: 10px; font-family: 'Courier New', monospace; text-align: center; margin: 20px 0; font-size: 1.1rem; }
+
+/* Controles de Gráficos */
+.controls { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+.slider-label { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: bold; color: var(--text-muted); margin-bottom: 8px; }
+input[type="range"] { width: 100%; height: 6px; background: var(--border-color); border-radius: 5px; cursor: pointer; outline: none; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--primary); cursor: pointer; transition: transform 0.1s; }
+.status-badge { display: block; text-align: center; margin-top: 15px; font-weight: bold; font-size: 0.9rem; }
+
+/* Catálogo */
+.product-card { padding: 25px; display: flex; flex-direction: column; gap: 10px; }
+.product-img { height: 120px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 4rem; margin-bottom: 10px; }
+.product-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.tag { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; font-weight: bold; }
+.tag.organic { background: #dcfce7; }
+.tag.fresh { background: #e0f2fe; }
+.tag.fair { background: #f3e8ff; color: #6b21a8; }
+.producer { font-size: 0.95rem; font-weight: 600; color: var(--primary-dark); }
+.desc { font-size: 0.9rem; color: var(--text-muted); flex-grow: 1; margin-bottom: 10px; }
+.product-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; border-top: 1px solid var(--border-color); padding-top: 15px; }
+.price { font-size: 1.25rem; font-weight: bold; color: var(--text-main); }
+.action-buttons { display: flex; gap: 8px; }
+.btn-small { border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; background: var(--primary); }
+
+/* Formulario */
+.form-group { margin-bottom: 20px; text-align: left; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
+.form-group input[type="text"], .form-group input[type="tel"], .form-group input[type="number"] { width: 100%; padding: 12px 15px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; outline: none; background-color: var(--bg-body); color: var(--text-main); transition: 0.3s;}
+.form-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(101, 163, 13, 0.2); background-color: var(--bg-card); }
+
+/* Switch de Ajustes */
+.toggle-switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--primary); }
+input:checked + .slider:before { transform: translateX(26px); }
+
+/* Modal y Footer */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
+.modal-overlay.active { display: flex; }
+.modal-content { background: var(--bg-card); padding: 35px; border-radius: 20px; max-width: 450px; width: 90%; text-align: center; position: relative; color: var(--text-main); border: 1px solid var(--border-color);}
+.close-modal { position: absolute; top: 15px; right: 20px; font-size: 1.8rem; cursor: pointer; color: var(--text-muted); font-weight: bold;}
+.payment-options { display: flex; flex-direction: column; gap: 12px; }
+.btn-payment { padding: 15px; border-radius: 12px; border: 2px solid var(--border-color); background: var(--bg-body); color: var(--text-main); font-size: 1rem; font-weight: bold; cursor: pointer; }
+.modal-input { width: 100%; padding: 12px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); border-radius: 8px; outline: none; font-size: 0.95rem; }
+footer { background: var(--header-bg); color: var(--header-text); padding: 60px 20px; text-align: center; border-top: 8px solid var(--primary); transition: background-color 0.3s; }

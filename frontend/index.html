@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exporta Tradición - AgroJusto PWA</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#16a34a">
+    
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; text-align: center; background: #f0fdf4; color: #1f2937; }
+        header { background: #16a34a; color: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .card { background: white; padding: 20px; margin: 20px auto; border-radius: 15px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); max-width: 450px; }
+        .status-ia { padding: 12px; border-radius: 8px; background: #f9fafb; margin-top: 15px; font-weight: bold; border-left: 5px solid #16a34a; }
+        input[type=range] { width: 100%; accent-color: #16a34a; cursor: pointer; }
+        .team-section { margin-top: 40px; padding: 20px; background: #fff; border-radius: 15px; font-size: 0.9rem; border: 1px solid #dcfce7; }
+        .team-list { list-style: none; padding: 0; line-height: 1.6; text-align: left; display: inline-block; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Exporta Tradición</h1>
+        <p>Optimización Inteligente de Cosecha</p>
+    </header>
+
+    <div class="card">
+        <h3>Simulador de Exportación</h3>
+        <p>Ajustar carga (kg):</p>
+        <input type="range" min="50" max="5000" value="1000" id="slider" oninput="runIA(this.value)">
+        <p><strong id="kgDisplay" style="color:#16a34a; font-size: 1.2rem;">1000kg</strong></p>
+        
+        <div class="status-ia" id="iaBox">
+            Estado: <span style="color: #16a34a;">Modelo Python Listo</span>
+        </div>
+    </div>
+
+    <div class="team-section">
+        <h3>Equipo de Desarrollo</h3>
+        <ul class="team-list">
+            <li><strong>• Gael Jesús Marroquín Mateo</strong></li>
+            <li>• Oscar Toledo Carrascosa (Matemático)</li>
+            <li>• Nelly Jackeline Chirino Ortiz</li>
+            <li>• Julio Cesar Meridad Ramírez</li>
+            <li>• Crhistopher Alexander Molina Hernández</li>
+        </ul>
+        <p style="font-size: 0.7rem; color: #888; margin-top: 15px;">Proyecto AgroJusto - PWA 2026</p>
+    </div>
+
+    <script>
+        // REGISTRO DEL SERVICE WORKER (Para instalar como App)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(() => console.log("PWA: Lista para instalar"))
+                    .catch(err => console.log("Error en SW:", err));
+            });
+        }
+
+        // LÓGICA DE SIMULACIÓN IA
+        function runIA(val) {
+            document.getElementById('kgDisplay').innerText = val + "kg";
+            const iaBox = document.getElementById('iaBox');
+            iaBox.innerHTML = 'Estado: <span style="color:#a855f7;">Calculando Algoritmo...</span>';
+            
+            setTimeout(() => {
+                let ganancia = (val * 18.5).toLocaleString('es-MX', {style: 'currency', currency: 'MXN'});
+                iaBox.innerHTML = 'Proyección de Ganancia: <span style="color:#16a34a;">' + ganancia + '</span>';
+            }, 400);
+        }
+    </script>
+</body>
+</html>
