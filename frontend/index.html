@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="styles.css">
 
     <style>
-        /* ESTILOS DE ACCESIBILIDAD Y SWITCHES */
         .large-text { font-size: 1.25rem !important; }
         .large-text h1 { font-size: 3.2rem !important; }
         .large-text h2 { font-size: 2.5rem !important; }
@@ -32,14 +31,14 @@
         .ajuste-item { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #eee; align-items: center;}
         .dark-mode .ajuste-item { border-bottom: 1px solid #444; }
 
-        /* TABLAS PARA MERCADO Y ADMIN */
-        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; text-align: left; }
-        .data-table th, .data-table td { border: 1px solid #ddd; padding: 12px; }
-        .data-table th { background-color: var(--primary, #16a34a); color: white; }
-        .dark-mode .data-table th, .dark-mode .data-table td { border: 1px solid #555; }
-        .data-table tr:nth-child(even) { background-color: rgba(0,0,0,0.02); }
-        .dark-mode .data-table tr:nth-child(even) { background-color: rgba(255,255,255,0.05); }
+        .data-table, .compra-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; text-align: left; }
+        .data-table th, .data-table td, .compra-table th, .compra-table td { border: 1px solid #ddd; padding: 12px; }
+        .data-table th, .compra-table th { background-color: var(--primary, #16a34a); color: white; }
+        .dark-mode .data-table th, .dark-mode .data-table td, .dark-mode .compra-table th, .dark-mode .compra-table td { border: 1px solid #555; }
+        .data-table tr:nth-child(even), .compra-table tr:nth-child(even) { background-color: rgba(0,0,0,0.02); }
+        .dark-mode .data-table tr:nth-child(even), .dark-mode .compra-table tr:nth-child(even) { background-color: rgba(255,255,255,0.05); }
 
+        .prod-img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); }
         .view { display: none; }
         .view.active { display: block; }
     </style>
@@ -49,11 +48,11 @@
     <nav>
         <div class="nav-container">
             <div class="logo" style="cursor: pointer;" onclick="navegar('vista-inicio')">Exporta<span>Tradición</span></div>
-            <div class="nav-links">
+            <div class="nav-links" style="display: flex; align-items: center;">
                 <button onclick="navegar('vista-inicio')">Inicio</button>
                 <button onclick="navegar('vista-nosotros')">Nosotros</button>
-                <button onclick="navegar('vista-tienda')">Mercado</button>
-                <button onclick="navegar('vista-registro-venta')">Vender</button>
+                <button onclick="navegar('vista-tienda')">Mercado 🛒</button>
+                <button onclick="navegar('vista-registro-venta')" style="color: var(--accent); font-weight: bold;">Vender</button>
                 <button onclick="navegar('vista-registro')" class="btn-registro-nav" style="color: var(--primary);">Registro</button>
                 <button onclick="navegar('vista-ajustes')" style="color: var(--primary); font-size: 1.2rem;" title="Ajustes de Accesibilidad">⚙️</button>
                 <button onclick="navegar('vista-admin')" style="color: var(--danger); font-weight: bold; margin-left: 10px;">Admin 🔒</button>
@@ -70,9 +69,9 @@
                     <p>Eliminamos intermediarios usando modelos de optimización matemática para asegurar el pago justo al productor agrícola.</p>
                     
                     <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px;">
-                        <button class="btn btn-registro-nav" style="background: var(--primary);" onclick="navegar('vista-registro')">📝 Registrarse</button>
-                        <button class="btn" style="background: var(--secondary);" onclick="navegar('vista-registro-venta')">🤝 Vende con nosotros</button>
-                        <button class="btn" style="background: var(--accent);" onclick="navegar('vista-tienda')">🛒 Mercado Integrado</button>
+                        <button class="btn btn-registro-nav" style="background: var(--primary);" onclick="navegar('vista-registro')">📝 Registro Comprador</button>
+                        <button class="btn" style="background: var(--secondary);" onclick="navegar('vista-registro-venta')">🤝 Vender Cosecha</button>
+                        <button class="btn" style="background: var(--accent);" onclick="navegar('vista-tienda')">🛒 Explorar Mercado Público</button>
                     </div>
                 </div>
             </header>
@@ -108,14 +107,8 @@
             <div class="card" style="max-width: 900px; margin: 0 auto 40px;">
                 <h3 style="color: var(--primary-dark); margin-bottom: 15px; font-size: 1.5rem;">Nuestra Misión</h3>
                 <p style="font-size: 1.05rem; margin-bottom: 25px;">
-                    Buscamos erradicar el "coyotaje" y las prácticas de intermediarios que absorben el valor del trabajo agrícola. Nuestro objetivo es devolverle el control al pequeño productor, asegurando que su esfuerzo sea recompensado de manera justa.
+                    Buscamos erradicar el "coyotaje" y las prácticas de intermediarios que absorben el valor del trabajo agrícola. Nuestro objetivo es devolverle el control al pequeño productor.
                 </p>
-
-                <h3 style="color: var(--secondary); margin-bottom: 15px; font-size: 1.5rem;">¿Qué nos mueve?</h3>
-                <p style="font-size: 1.05rem; margin-bottom: 25px;">
-                    Sabemos que en el campo está la verdadera riqueza de nuestra región. Exporta Tradición nace de la necesidad de aplicar la tecnología y el cálculo matemático creando un ecosistema donde las matemáticas protegen al trabajador.
-                </p>
-
                 <div class="grid-3" style="margin-top: 40px; grid-template-columns: 1fr 1fr;">
                     <div style="background: rgba(22, 101, 52, 0.1); padding: 25px; border-radius: 15px; border: 1px solid var(--primary);">
                         <div style="font-size: 2.5rem; margin-bottom: 10px;">🤝</div>
@@ -125,7 +118,7 @@
                     <div style="background: rgba(30, 58, 138, 0.1); padding: 25px; border-radius: 15px; border: 1px solid var(--secondary);">
                         <div style="font-size: 2.5rem; margin-bottom: 10px;">📈</div>
                         <h4 style="color: var(--secondary); margin-bottom: 10px;">Tecnología Aplicada</h4>
-                        <p style="font-size: 0.9rem;">Usamos modelos de límites y derivadas para calcular precios que jamás generen pérdidas.</p>
+                        <p style="font-size: 0.9rem;">Usamos modelos de límites y derivadas para calcular precios justos.</p>
                     </div>
                 </div>
             </div>
@@ -133,41 +126,29 @@
 
         <section id="vista-registro" class="view">
             <div class="section-title" style="margin-top: 40px;">
-                <h2>Tu Cuenta en Exporta Tradición</h2>
+                <h2>Registro de Cliente (Comprador) 🛒</h2>
                 <div class="underline"></div>
             </div>
             <div class="card" style="max-width: 600px; margin: 0 auto;">
                 
-                <div id="bloque-formulario">
-                    <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Regístrate para comprar o vender productos sin intermediarios.</p>
-                    <form id="form-registro-general" onsubmit="guardarRegistroGeneral(event)">
-                        <div class="form-group">
-                            <label>Nombre</label>
-                            <input type="text" id="reg-nombre" required placeholder="Ej. Juan">
-                        </div>
-                        <div class="form-group">
-                            <label>Apellido</label>
-                            <input type="text" id="reg-apellido" required placeholder="Ej. Pérez">
-                        </div>
-                        <div class="form-group">
-                            <label>Localización (Ciudad o Municipio)</label>
-                            <input type="text" id="reg-localizacion" required placeholder="Ej. Tapachula, Chiapas">
-                        </div>
-                        <div class="form-group">
-                            <label>Número de Teléfono</label>
-                            <input type="tel" id="reg-telefono" required placeholder="Ej. 962 123 4567">
-                        </div>
-                        <button type="submit" class="btn" style="width: 100%; margin-top: 15px;">Guardar y Continuar al Mercado</button>
+                <div id="bloque-formulario-comprador">
+                    <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Crea tu cuenta gratuita para poder adquirir productos directamente de los productores locales.</p>
+                    <form onsubmit="registrarComprador(event)">
+                        <div class="form-group"><label>Nombre</label><input type="text" id="regC-nombre" required placeholder="Ej. Juan"></div>
+                        <div class="form-group"><label>Apellido</label><input type="text" id="regC-apellido" required placeholder="Ej. Pérez"></div>
+                        <div class="form-group"><label>Localización (Ciudad o Municipio) 💡</label><input type="text" id="regC-localizacion" required placeholder="Ej. Tapachula, Chiapas. Importante para tu entrega."></div>
+                        <div class="form-group"><label>Número de Teléfono</label><input type="tel" id="regC-telefono" required placeholder="Ej. 962 123 4567"></div>
+                        <button type="submit" class="btn" style="width: 100%; margin-top: 15px;">Crear Cuenta de Comprador</button>
                     </form>
                 </div>
 
                 <div id="bloque-perfil" style="display: none; text-align: center; padding: 20px;">
                     <div style="font-size: 5rem; margin-bottom: 15px;">👤</div>
-                    <h3 id="texto-bienvenida" style="font-size: 1.8rem; color: var(--primary-dark); margin-bottom: 10px;">¡Hola!</h3>
-                    <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px;">Tu sesión está activa. Ya puedes vender y comprar libremente.</p>
+                    <h3 id="texto-bienvenida" style="font-size: 1.8rem; color: var(--primary-dark); margin-bottom: 5px;">¡Hola!</h3>
+                    <p id="texto-rol" style="color: var(--accent); font-weight: bold; font-size: 1.2rem; margin-bottom: 20px;"></p>
                     
-                    <button class="btn" onclick="navegar('vista-tienda')" style="width: 100%; margin-bottom: 15px; background: var(--secondary);">Ir al Mercado</button>
-                    <button class="btn" onclick="cerrarSesion()" style="width: 100%; background: var(--danger); opacity: 0.9;">🚪 Cerrar Sesión / Agregar otra cuenta</button>
+                    <button class="btn" onclick="navegar('vista-tienda')" style="width: 100%; margin-bottom: 15px; background: var(--secondary);">🛒 Ir al Mercado</button>
+                    <button class="btn" onclick="cerrarSesion()" style="width: 100%; background: var(--danger); opacity: 0.9;">🚪 Cerrar Sesión</button>
                 </div>
 
             </div>
@@ -175,64 +156,82 @@
 
         <section id="vista-registro-venta" class="view">
             <div class="section-title" style="margin-top: 40px;">
-                <h2>Registra tu Cosecha</h2>
+                <h2>Área del Productor 🌾</h2>
                 <div class="underline"></div>
             </div>
             <div class="card" style="max-width: 600px; margin: 0 auto;">
-                <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Ingresa los datos para publicarlo en el mercado local.</p>
-                <form id="form-registro-venta" onsubmit="guardarRegistroVenta(event)">
-                    <div class="form-group">
-                        <label>Nombre del Vendedor o Finca</label>
-                        <input type="text" id="ven-nombre" required placeholder="Ej. Finca La Esperanza o Juan Pérez">
-                    </div>
-                    <div class="form-group">
-                        <label>Ubicación de la Parcela</label>
-                        <input type="text" id="ven-ubicacion" required placeholder="Ej. Ejido El Edén">
-                    </div>
-                    <div class="form-group">
-                        <label>Producto que deseas vender</label>
-                        <input type="text" id="ven-producto" required placeholder="Ej. Café, Maíz, Miel, Cacao">
-                    </div>
-                    
-                    <div class="grid-3" style="grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div class="form-group">
-                            <label>Cantidad Disponible</label>
-                            <input type="number" id="ven-cantidad" required placeholder="Ej. 50">
-                        </div>
-                        <div class="form-group">
-                            <label>Unidad de medida</label>
-                            <select id="ven-unidad" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit;">
-                                <option value="Kilos">Kilos (kg)</option>
-                                <option value="Gramos">Gramos (g)</option>
-                                <option value="Toneladas">Toneladas (t)</option>
-                                <option value="Litros">Litros (L)</option>
-                                <option value="Cajas">Cajas</option>
-                                <option value="Piezas">Piezas / Unidades</option>
-                            </select>
-                        </div>
-                    </div>
+                
+                <div id="bloque-registro-vendedor">
+                    <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Para poder vender en la plataforma, primero debes registrarte como <strong>Productor</strong>.</p>
+                    <form onsubmit="registrarVendedor(event)">
+                        <div class="form-group"><label>Nombre</label><input type="text" id="regV-nombre" required placeholder="Ej. María"></div>
+                        <div class="form-group"><label>Apellido</label><input type="text" id="regV-apellido" required placeholder="Ej. Gómez"></div>
+                        <div class="form-group"><label>Localización de la Finca / Parcela 💡</label><input type="text" id="regV-localizacion" required placeholder="Ej. Ejido El Edén, Chiapas."></div>
+                        <div class="form-group"><label>Número de Teléfono</label><input type="tel" id="regV-telefono" required placeholder="Ej. 962 123 4567"></div>
+                        <button type="submit" class="btn" style="width: 100%; margin-top: 15px; background: var(--accent);">Crear Cuenta de Productor</button>
+                    </form>
+                </div>
 
-                    <div class="form-group">
-                        <label>Precio total o por unidad ($)</label>
-                        <input type="number" id="ven-precio" required placeholder="Ej. 180">
-                    </div>
-                    <button type="submit" class="btn" style="width: 100%; margin-top: 15px; background: var(--accent);">Publicar Producto</button>
-                </form>
+                <div id="bloque-publicar-venta" style="display:none;">
+                    <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Sube los datos y la foto de tu cosecha al Mercado Oficial.</p>
+                    <form onsubmit="guardarRegistroVenta(event)">
+                        <div class="form-group">
+                            <label>Nombre Comercial o de la Finca</label>
+                            <input type="text" id="ven-nombre" required placeholder="Ej. Finca La Esperanza">
+                        </div>
+                        <div class="form-group">
+                            <label>Imagen de la Cosecha 📸</label>
+                            <input type="file" id="ven-imagen" accept="image/*" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;">
+                        </div>
+                        <div class="form-group">
+                            <label>Producto que deseas vender</label>
+                            <input type="text" id="ven-producto" required placeholder="Ej. Café, Maíz, Miel, Cacao">
+                        </div>
+                        <div class="grid-3" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div class="form-group">
+                                <label>Cantidad Disponible</label>
+                                <input type="number" id="ven-cantidad" required placeholder="Ej. 50">
+                            </div>
+                            <div class="form-group">
+                                <label>Unidad de medida</label>
+                                <select id="ven-unidad" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit;">
+                                    <option value="Kilos">Kilos (kg)</option>
+                                    <option value="Gramos">Gramos (g)</option>
+                                    <option value="Toneladas">Toneladas (t)</option>
+                                    <option value="Litros">Litros (L)</option>
+                                    <option value="Cajas">Cajas</option>
+                                    <option value="Piezas">Piezas / Unidades</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Precio ($) ✅</label>
+                            <input type="number" id="ven-precio" required placeholder="Ej. 180">
+                        </div>
+                        <button type="submit" class="btn" style="width: 100%; margin-top: 15px; background: var(--accent);">Publicar Producto Permanentemente</button>
+                    </form>
+                </div>
+
+                <div id="bloque-vendedor-denegado" style="display:none; text-align:center; padding: 20px;">
+                    <span style="font-size: 4rem;">🚫</span>
+                    <h3 style="color: var(--danger); margin-top: 15px;">Acceso Denegado</h3>
+                    <p style="color: var(--text-muted); margin-top: 10px;">Estás usando una cuenta de <strong>Cliente (Comprador)</strong>.</p>
+                    <p style="margin-top: 5px;">Solo los productores pueden acceder a esta sección para vender. Si deseas vender, cierra sesión y crea una cuenta de Productor.</p>
+                </div>
+
             </div>
         </section>
 
         <section id="vista-tienda" class="view">
-            
             <div class="section-title" style="margin-top: 40px;">
-                <h2>Mercado Exporta Tradición</h2>
-                <p style="color: var(--text-muted); max-width: 600px; margin: 10px auto; font-size: 1.1rem; text-align: center;">Tu panel de control integral. Ajusta tus variables de venta usando matemáticas y explora el catálogo local.</p>
+                <h2>Mercado Integrado SQLite 🛒</h2>
+                <p style="color: var(--text-muted); max-width: 600px; margin: 10px auto; font-size: 1.1rem; text-align: center;">El catálogo es público, pero <strong>solo los Clientes registrados pueden comprar</strong>.</p>
                 <div class="underline"></div>
             </div>
             
             <div style="background: var(--bg-card); padding: 30px; border-radius: 20px; border: 1px solid var(--border-color); margin-bottom: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
-                <h3 style="text-align: center; margin-bottom: 30px; color: var(--primary-dark);">⚙️ Panel Analítico del Productor</h3>
+                <h3 style="text-align: center; margin-bottom: 30px; color: var(--primary-dark);">⚙️ Panel Analítico del Productor ✅</h3>
                 <div class="grid-3">
-                    
                     <div class="card reveal active" style="box-shadow: none; border: 1px dashed var(--border-color);">
                         <h3>Límite de Protección</h3>
                         <div class="math-box" style="font-size: 0.9rem; text-align:center; margin-bottom:10px; font-weight:bold;">lim (t→a) P(t) ≥ Costo</div>
@@ -243,7 +242,6 @@
                             <span id="limitStatus" class="status-badge" style="color:var(--primary); font-weight:bold; display:block; margin-top:10px;">ESTADO: SEGURO</span>
                         </div>
                     </div>
-
                     <div class="card reveal active" style="box-shadow: none; border: 1px dashed var(--border-color);">
                         <h3>Derivada de Demanda</h3>
                         <div class="math-box" id="derivFormula" style="font-size: 0.9rem; text-align:center; margin-bottom:10px; font-weight:bold;">dP/dt = Pendiente</div>
@@ -254,7 +252,6 @@
                             <span id="derivStatus" class="status-badge" style="color:var(--secondary); font-weight:bold; display:block; margin-top:10px;">ESTABLE</span>
                         </div>
                     </div>
-
                     <div class="card reveal active" style="box-shadow: none; border: 1px dashed var(--border-color); background: rgba(168, 85, 247, 0.05);">
                         <h3 style="color: var(--accent);">Optimización de Ganancia</h3>
                         <div class="math-box" id="optFormula" style="font-size: 0.9rem; text-align:center; margin-bottom:10px; font-weight:bold;">B'(x) = 0</div>
@@ -272,7 +269,7 @@
                 </div>
             </div>
 
-            <h3 style="margin-bottom: 20px; font-size: 1.8rem; color: var(--text-main);">Catálogo Disponible</h3>
+            <h3 style="margin-bottom: 20px; font-size: 1.8rem; color: var(--text-main);">Catálogo Disponible Público 🛒</h3>
             <div class="card" style="overflow-x: auto; padding: 0;">
                 <div id="catalogo-productos"></div>
             </div>
@@ -280,12 +277,12 @@
 
         <section id="vista-admin" class="view">
             <div class="section-title" style="margin-top: 40px;">
-                <h2>Panel de Administrador</h2>
+                <h2>Panel de Administrador 🔒</h2>
                 <div class="underline"></div>
             </div>
             
             <div class="card" id="admin-login-box" style="max-width: 400px; margin: 0 auto;">
-                <h3 style="text-align:center; color: var(--danger);">Acceso Restringido</h3>
+                <h3 style="text-align:center; color: var(--danger);">Acceso Restringido 🔒</h3>
                 <p style="text-align:center; font-size:0.9rem; margin-bottom: 20px;">Solo para autores del proyecto.</p>
                 <div class="form-group">
                     <label>Nombre Completo</label>
@@ -298,26 +295,37 @@
                 <button class="btn" style="width:100%; background:var(--danger);" onclick="loginAdmin()">Ingresar</button>
             </div>
 
-            <div class="card" id="admin-dashboard" style="display:none; max-width: 1000px; margin: 0 auto;">
+            <div class="card" id="admin-dashboard" style="display:none; max-width: 1200px; margin: 0 auto;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                    <h3 style="color: var(--primary); margin: 0;">Base de Datos Global de Cosechas</h3>
+                    <h3 style="color: var(--primary); margin: 0;">Registro de compras y ventas ✅</h3>
                     <button class="btn" style="background:var(--secondary); padding: 8px 15px;" onclick="cerrarAdmin()">Cerrar Admin</button>
                 </div>
-                <p style="margin-bottom: 15px;">Aquí se registran todas las compras y ventas de las personas.</p>
-                <div style="overflow-x: auto;">
-                    <div id="tabla-solicitudes"></div>
+                <p style="margin-bottom: 15px;">Registro oficial de todas las compras y ventas que marca la ubicación de origen de la compra.</p>
+                <div style="overflow-x: auto; margin-bottom: 40px;">
+                    <div id="tabla-transacciones"></div>
                 </div>
             </div>
         </section>
 
         <section id="vista-ajustes" class="view">
             <div class="section-title" style="margin-top: 40px;">
-                <h2>Ajustes de Accesibilidad</h2>
+                <h2>Ajustes y Configuración</h2>
                 <div class="underline"></div>
             </div>
             
             <div class="card" style="max-width: 600px; margin: 0 auto;">
                 <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Personaliza tu experiencia en Exporta Tradición.</p>
+
+                <div class="ajuste-item" id="contenedor-instalar" style="display: none; background: rgba(168, 85, 247, 0.1); padding: 20px; border-radius: 12px; border: 1px solid var(--accent); margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span style="font-size: 2rem;">📱</span>
+                        <div>
+                            <h3 style="margin: 0; margin-bottom: 5px; color: var(--accent);">Instalar App</h3>
+                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Descarga Exporta Tradición en tu celular para acceso rápido.</p>
+                        </div>
+                    </div>
+                    <button id="btn-instalar" style="background: var(--accent); color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; font-size: 1rem;">⬇️ Instalar</button>
+                </div>
 
                 <div class="ajuste-item">
                     <div style="display: flex; align-items: center; gap: 15px;">
@@ -367,12 +375,12 @@
 
     <footer>
         <div class="hero-content">
-            <h2 style="margin-bottom:20px; color: var(--header-text);">Hacia una Economía Agraria Sostenible</h2>
+            <h2 style="margin-bottom:20px; color: var(--header-text);">Hacia una Economía Agraria Sostenible ✅</h2>
             <p style="font-size: 1rem; color: #a8a29e;">Utilizando las matemáticas para devolverle el valor a quien verdaderamente trabaja la tierra.</p>
             <div style="margin-top:40px; font-size:0.9rem; color: #a8a29e; line-height: 1.8;">
                 <p style="opacity: 0.8; margin-bottom: 10px;">© 2026 Exporta Tradición</p>
-                <p><strong>Desarrolladores y Autores:</strong><br>
-                Gael Jesús Marroquín Mateo, Oscar Toledo Carrascosa, Nelly Jackeline Chirino Ortiz, Julio Cesar Meridad Ramírez, Crhistopher Alexander Molina Hernández.</p>
+                <p><strong>Desarrolladores y Autores ✅:</strong><br>
+                Gael Jesús Marroquín Mateo, Oscar Toledo Carrascosa, Nelly Jackeline Chirino Ortiz, Julio Cesar Meridad Ramírez y Crhistopher Alexander Molina Hernández.</p>
             </div>
         </div>
     </footer>
@@ -380,10 +388,11 @@
     <div id="modalPago" class="modal-overlay" onclick="cerrarModalSiFuera(event)">
         <div class="modal-content">
             <span class="close-modal" onclick="document.getElementById('modalPago').style.display='none'">&times;</span>
-            <h3 id="modalTitle" style="font-size: 1.4rem; color: var(--text-main);">Comprar Producto</h3>
+            <h3 id="modalTitle" style="font-size: 1.4rem; color: var(--text-main);">Comprar Producto 🔒</h3>
+            <p>Trato directo. Llama al productor para coordinar el pago en efectivo y la entrega.</p>
             <div id="efectivoInfo" style="display: block; margin-top: 25px; background: rgba(132, 204, 22, 0.1); padding: 20px; border-radius: 12px; border: 1px solid var(--primary);">
                 <p style="color: var(--primary-dark); font-weight: bold; margin-bottom: 8px;">¡Trato directo sin coyotes!</p>
-                <a href="tel:+5219621474370" style="display: inline-block; margin-top: 15px; font-weight: bold; color: white; background: var(--primary); text-decoration: none; padding: 10px 20px; border-radius: 20px;">📞 Llamar al Productor</a>
+                <a href="tel:+5219621474370" style="display: inline-block; margin-top: 15px; font-weight: bold; color: white; background: var(--primary); text-decoration: none; padding: 10px 20px; border-radius: 20px;">📞 Llamar al Productor Real</a>
             </div>
         </div>
     </div>
