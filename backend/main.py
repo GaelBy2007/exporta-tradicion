@@ -32,26 +32,18 @@ def iniciar_base_de_datos():
     conexion = sqlite3.connect(DB_PATH)
     cursor = conexion.cursor()
     
-    # Borramos tablas viejas para aplicar el nuevo diseño de Roles
     cursor.executescript("""
-        DROP TABLE IF EXISTS Productores;
-        DROP TABLE IF EXISTS Usuarios;
-        DROP TABLE IF EXISTS Productos;
-        DROP TABLE IF EXISTS Transacciones;
-    """)
-
-    cursor.executescript("""
-        CREATE TABLE Usuarios (
+        CREATE TABLE IF NOT EXISTS Usuarios (
             id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre TEXT NOT NULL,
             apellidos TEXT NOT NULL,
             localizacion TEXT NOT NULL,
             telefono TEXT UNIQUE NOT NULL,
-            rol TEXT NOT NULL, -- AQUÍ SE GUARDA SI ES COMPRADOR O VENDEDOR
+            rol TEXT NOT NULL,
             fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
-        CREATE TABLE Productos (
+        CREATE TABLE IF NOT EXISTS Productos (
             id_producto INTEGER PRIMARY KEY AUTOINCREMENT,
             vendedor_finca TEXT NOT NULL,
             producto TEXT NOT NULL,
@@ -60,10 +52,11 @@ def iniciar_base_de_datos():
             precio REAL NOT NULL,
             ubicacion_vendedor TEXT NOT NULL,
             creador_usuario TEXT NOT NULL,
-            imagen_url TEXT DEFAULT '/static/placeholder.png'
+            imagen_url TEXT DEFAULT '/static/placeholder.png',
+            estado TEXT DEFAULT 'activo'
         );
 
-        CREATE TABLE Transacciones (
+        CREATE TABLE IF NOT EXISTS Transacciones (
             id_transaccion INTEGER PRIMARY KEY AUTOINCREMENT,
             producto_id INTEGER NOT NULL,
             vendedor_nombre TEXT NOT NULL,
@@ -71,13 +64,19 @@ def iniciar_base_de_datos():
             precio_venta REAL NOT NULL,
             comprador_nombre TEXT NOT NULL,
             comprador_ubicacion_origen TEXT NOT NULL,
-            fecha_compra DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (producto_id) REFERENCES Productos(id_producto)
+            fecha_compra DATETIME DEFAULT CURRENT_TIMESTAMP
         );
     """)
+    
+    # Truco para actualizar la BD sin borrar datos si ya existía
+    try:
+        cursor.execute("ALTER TABLE Productos ADD COLUMN estado TEXT DEFAULT 'activo'")
+    except:
+        pass # Si la columna ya existe, no hace nada
+
     conexion.commit()
     conexion.close()
-    print("✅ Base de datos SQLite inicializada con Perfiles Separados (Comprador/Vendedor)")
+    print("✅ Base de datos SQLite inicializada")
 
 class DatosUsuario(BaseModel):
     nombre: str
@@ -103,7 +102,7 @@ class DatosCompra(BaseModel):
 
 @app.get("/")
 def estado_servidor():
-    return {"mensaje": "API funcionando"}
+    return {"mensaje": "API funcionando perfectamente"}
 
 @app.post("/api/registro")
 def registrar_usuario(datos: DatosUsuario):
@@ -118,7 +117,7 @@ def registrar_usuario(datos: DatosUsuario):
         conexion.close()
         return {"status": "success", "message": "Usuario registrado"}
     except sqlite3.IntegrityError:
-        raise HTTPException(status_code=400, detail="Este teléfono ya está registrado")
+        raise HTTPException(status_code=400, detail="Este número de teléfono ya está registrado")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -140,8 +139,8 @@ def publicar_venta(datos: DatosVenta):
         conexion = sqlite3.connect(DB_PATH)
         cursor = conexion.cursor()
         cursor.execute("""
-            INSERT INTO Productos (vendedor_finca, producto, cantidad, unidad, precio, ubicacion_vendedor, creador_usuario, imagen_url)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO Productos (vendedor_finca, producto, cantidad, unidad, precio, ubicacion_vendedor, creador_usuario, imagen_url, estado)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'activo')
         """, (datos.vendedor_finca, datos.producto, datos.cantidad, datos.unidad, datos.precio, datos.ubicacion_vendedor, datos.creador_usuario, datos.imagen_url))
         conexion.commit()
         conexion.close()
@@ -155,7 +154,8 @@ def obtener_catalogo():
         conexion = sqlite3.connect(DB_PATH)
         conexion.row_factory = sqlite3.Row
         cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM Productos")
+        # EL MERCADO SOLO MUESTRA LOS ACTIVOS
+        cursor.execute("SELECT * FROM Productos WHERE estado = 'activo'")
         filas = cursor.fetchall()
         conexion.close()
         return [dict(fila) for fila in filas]
@@ -186,6 +186,20 @@ def registrar_compra(datos: DatosCompra):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# --- EL VENDEDOR OCULTA SU PRODUCTO (Soft Delete) ---
+@app.delete("/api/eliminar-producto/{producto_id}")
+def eliminar_producto(producto_id: int):
+    try:
+        conexion = sqlite3.connect(DB_PATH)
+        cursor = conexion.cursor()
+        cursor.execute("UPDATE Productos SET estado = 'eliminado' WHERE id_producto = ?", (producto_id,))
+        conexion.commit()
+        conexion.close()
+        return {"status": "success", "message": "Producto ocultado del mercado"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- EL ADMIN VE TODAS LAS TRANSACCIONES ---
 @app.get("/api/admin/transacciones")
 def obtener_transacciones_admin():
     try:
@@ -198,4 +212,30 @@ def obtener_transacciones_admin():
         return [dict(fila) for fila in filas]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-        
+
+# --- EL ADMIN VE TODOS LOS PRODUCTOS (Activos y Ocultos) ---
+@app.get("/api/admin/productos")
+def obtener_productos_admin():
+    try:
+        conexion = sqlite3.connect(DB_PATH)
+        conexion.row_factory = sqlite3.Row
+        cursor = conexion.cursor()
+        cursor.execute("SELECT * FROM Productos ORDER BY id_producto DESC")
+        filas = cursor.fetchall()
+        conexion.close()
+        return [dict(fila) for fila in filas]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- EL ADMIN BORRA PERMANENTEMENTE (Hard Delete) ---
+@app.delete("/api/admin/eliminar-producto-permanente/{producto_id}")
+def eliminar_producto_permanente(producto_id: int):
+    try:
+        conexion = sqlite3.connect(DB_PATH)
+        cursor = conexion.cursor()
+        cursor.execute("DELETE FROM Productos WHERE id_producto = ?", (producto_id,))
+        conexion.commit()
+        conexion.close()
+        return {"status": "success", "message": "Producto borrado permanentemente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
