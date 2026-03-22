@@ -13,34 +13,34 @@
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/628/628283.png">
 
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
         .large-text { font-size: 1.25rem !important; }
         .large-text h1 { font-size: 3.2rem !important; }
         .large-text h2 { font-size: 2.5rem !important; }
         .large-text p, .large-text button, .large-text input, .large-text label, .large-text select { font-size: 1.3rem !important; }
-
         .dark-mode { background-color: #1c1917 !important; color: #f5f5f4 !important; }
         .dark-mode .card, .dark-mode .modal-content { background-color: #262626 !important; color: white !important; border: 1px solid #444; }
         .dark-mode nav { background: rgba(28, 25, 23, 0.9) !important; }
-
         .toggle-switch { position: relative; display: inline-block; width: 50px; height: 24px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
         input:checked + .slider { background-color: var(--primary, #16a34a); }
         .ajuste-item { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid #eee; align-items: center;}
         .dark-mode .ajuste-item { border-bottom: 1px solid #444; }
-
         .data-table, .compra-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; text-align: left; }
         .data-table th, .data-table td, .compra-table th, .compra-table td { border: 1px solid #ddd; padding: 12px; }
         .data-table th, .compra-table th { background-color: var(--primary, #16a34a); color: white; }
         .dark-mode .data-table th, .dark-mode .data-table td, .dark-mode .compra-table th, .dark-mode .compra-table td { border: 1px solid #555; }
         .data-table tr:nth-child(even), .compra-table tr:nth-child(even) { background-color: rgba(0,0,0,0.02); }
         .dark-mode .data-table tr:nth-child(even), .dark-mode .compra-table tr:nth-child(even) { background-color: rgba(255,255,255,0.05); }
-
         .prod-img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border-color); }
         .view { display: none; }
         .view.active { display: block; }
+        #mapa-mercado { height: 400px; width: 100%; border-radius: 12px; border: 2px solid var(--primary); z-index: 1; }
+        .dark-mode #mapa-mercado { border: 2px solid #555; }
     </style>
 </head>
 <body onload="cargarTodo()">
@@ -67,20 +67,15 @@
                 <div class="hero-content reveal active">
                     <h1>Justicia en el Campo con <span>Cálculo Aplicado</span></h1>
                     <p>Eliminamos intermediarios usando modelos de optimización matemática para asegurar el pago justo al productor agrícola.</p>
-                    
                     <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 30px;">
-                        <button class="btn btn-registro-nav" style="background: var(--primary);" onclick="navegar('vista-registro')">📝 Registro Comprador</button>
+                        <button class="btn btn-registro-nav" style="background: var(--primary);" onclick="navegar('vista-registro')">📝 Crear Cuenta</button>
                         <button class="btn" style="background: var(--secondary);" onclick="navegar('vista-registro-venta')">🤝 Vender Cosecha</button>
                         <button class="btn" style="background: var(--accent);" onclick="navegar('vista-tienda')">🛒 Explorar Mercado Público</button>
                     </div>
                 </div>
             </header>
-
             <div id="problem" class="reveal active">
-                <div class="section-title">
-                    <h2>El Problema del Intermediario</h2>
-                    <div class="underline"></div>
-                </div>
+                <div class="section-title"><h2>El Problema del Intermediario</h2><div class="underline"></div></div>
                 <div class="grid-3" style="grid-template-columns: 1fr 1fr;">
                     <div class="card">
                         <h3>Distribución de Ganancias</h3>
@@ -99,16 +94,10 @@
         </section>
 
         <section id="vista-nosotros" class="view">
-            <div class="section-title" style="margin-top: 40px;">
-                <h2>Quiénes Somos y Qué Buscamos</h2>
-                <div class="underline"></div>
-            </div>
-            
+            <div class="section-title" style="margin-top: 40px;"><h2>Quiénes Somos y Qué Buscamos</h2><div class="underline"></div></div>
             <div class="card" style="max-width: 900px; margin: 0 auto 40px;">
                 <h3 style="color: var(--primary-dark); margin-bottom: 15px; font-size: 1.5rem;">Nuestra Misión</h3>
-                <p style="font-size: 1.05rem; margin-bottom: 25px;">
-                    Buscamos erradicar el "coyotaje" y las prácticas de intermediarios que absorben el valor del trabajo agrícola. Nuestro objetivo es devolverle el control al pequeño productor.
-                </p>
+                <p style="font-size: 1.05rem; margin-bottom: 25px;">Buscamos erradicar el "coyotaje" y las prácticas de intermediarios que absorben el valor del trabajo agrícola. Nuestro objetivo es devolverle el control al pequeño productor.</p>
                 <div class="grid-3" style="margin-top: 40px; grid-template-columns: 1fr 1fr;">
                     <div style="background: rgba(22, 101, 52, 0.1); padding: 25px; border-radius: 15px; border: 1px solid var(--primary);">
                         <div style="font-size: 2.5rem; margin-bottom: 10px;">🤝</div>
@@ -125,109 +114,58 @@
         </section>
 
         <section id="vista-registro" class="view">
-            <div class="section-title" style="margin-top: 40px;">
-                <h2>Registro de Cliente (Comprador) 🛒</h2>
-                <div class="underline"></div>
-            </div>
+            <div class="section-title" style="margin-top: 40px;"><h2>Tu Cuenta en Exporta Tradición</h2><div class="underline"></div></div>
             <div class="card" style="max-width: 600px; margin: 0 auto;">
-                
-                <div id="bloque-formulario-comprador">
-                    <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Crea tu cuenta gratuita para poder adquirir productos directamente de los productores locales.</p>
-                    <form onsubmit="registrarComprador(event)">
-                        <div class="form-group"><label>Nombre</label><input type="text" id="regC-nombre" required placeholder="Ej. Juan"></div>
-                        <div class="form-group"><label>Apellido</label><input type="text" id="regC-apellido" required placeholder="Ej. Pérez"></div>
-                        <div class="form-group"><label>Localización (Ciudad o Municipio) 💡</label><input type="text" id="regC-localizacion" required placeholder="Ej. Tapachula, Chiapas. Importante para tu entrega."></div>
-                        <div class="form-group"><label>Número de Teléfono</label><input type="tel" id="regC-telefono" required placeholder="Ej. 962 123 4567"></div>
-                        <button type="submit" class="btn" style="width: 100%; margin-top: 15px;">Crear Cuenta de Comprador</button>
+                <div id="bloque-formulario">
+                    <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Crea tu cuenta gratuita. Con ella podrás comprar productos o publicar tus propias cosechas para venderlas.</p>
+                    <form id="form-registro-general" onsubmit="guardarRegistroGeneral(event)">
+                        <div class="form-group"><label>Nombre</label><input type="text" id="reg-nombre" required placeholder="Ej. Juan"></div>
+                        <div class="form-group"><label>Apellido</label><input type="text" id="reg-apellido" required placeholder="Ej. Pérez"></div>
+                        <div class="form-group"><label>Localización (Ciudad o Municipio) 💡</label><input type="text" id="reg-localizacion" required placeholder="Ej. Tapachula, Chiapas. Saldrá en el mapa."></div>
+                        <div class="form-group"><label>Número de Teléfono (Como ID de sesión)</label><input type="tel" id="reg-telefono" required placeholder="Ej. 962 123 4567"></div>
+                        <button type="submit" class="btn" style="width: 100%; margin-top: 15px;">Crear Cuenta Universal</button>
                     </form>
                 </div>
-
                 <div id="bloque-perfil" style="display: none; text-align: center; padding: 20px;">
                     <div style="font-size: 5rem; margin-bottom: 15px;">👤</div>
                     <h3 id="texto-bienvenida" style="font-size: 1.8rem; color: var(--primary-dark); margin-bottom: 5px;">¡Hola!</h3>
-                    <p id="texto-rol" style="color: var(--accent); font-weight: bold; font-size: 1.2rem; margin-bottom: 20px;"></p>
-                    
-                    <button class="btn" onclick="navegar('vista-tienda')" style="width: 100%; margin-bottom: 15px; background: var(--secondary);">🛒 Ir al Mercado</button>
+                    <p style="color: var(--text-muted); margin-bottom: 20px;">Tu cuenta está activa. Puedes comprar en el mercado o registrar una cosecha para vender.</p>
+                    <button class="btn" onclick="navegar('vista-tienda')" style="width: 100%; margin-bottom: 10px; background: var(--secondary);">🛒 Ir a Comprar</button>
+                    <button class="btn" onclick="navegar('vista-registro-venta')" style="width: 100%; margin-bottom: 15px; background: var(--accent);">🌾 Publicar Cosecha</button>
                     <button class="btn" onclick="cerrarSesion()" style="width: 100%; background: var(--danger); opacity: 0.9;">🚪 Cerrar Sesión</button>
                 </div>
-
             </div>
         </section>
 
         <section id="vista-registro-venta" class="view">
-            <div class="section-title" style="margin-top: 40px;">
-                <h2>Área del Productor 🌾</h2>
-                <div class="underline"></div>
-            </div>
-            <div class="card" style="max-width: 600px; margin: 0 auto;">
-                
-                <div id="bloque-registro-vendedor">
-                    <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Para poder vender en la plataforma, primero debes registrarte como <strong>Productor</strong>.</p>
-                    <form onsubmit="registrarVendedor(event)">
-                        <div class="form-group"><label>Nombre</label><input type="text" id="regV-nombre" required placeholder="Ej. María"></div>
-                        <div class="form-group"><label>Apellido</label><input type="text" id="regV-apellido" required placeholder="Ej. Gómez"></div>
-                        <div class="form-group"><label>Localización de la Finca / Parcela 💡</label><input type="text" id="regV-localizacion" required placeholder="Ej. Ejido El Edén, Chiapas."></div>
-                        <div class="form-group"><label>Número de Teléfono</label><input type="tel" id="regV-telefono" required placeholder="Ej. 962 123 4567"></div>
-                        <button type="submit" class="btn" style="width: 100%; margin-top: 15px; background: var(--accent);">Crear Cuenta de Productor</button>
-                    </form>
-                </div>
-
-                <div id="bloque-publicar-venta" style="display:none;">
-                    <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Sube los datos y la foto de tu cosecha al Mercado Oficial.</p>
-                    <form onsubmit="guardarRegistroVenta(event)">
-                        <div class="form-group">
-                            <label>Nombre Comercial o de la Finca</label>
-                            <input type="text" id="ven-nombre" required placeholder="Ej. Finca La Esperanza">
+            <div class="section-title" style="margin-top: 40px;"><h2>Registra tu Cosecha Real 🔒</h2><div class="underline"></div></div>
+            <div class="card" id="form-venta-contenedor" style="max-width: 600px; margin: 0 auto;">
+                <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Sube los datos y la foto de tu cosecha para publicarla en el Mercado Oficial.</p>
+                <form id="form-registro-venta" onsubmit="guardarRegistroVenta(event)">
+                    <div class="form-group"><label>Nombre Comercial o de la Finca</label><input type="text" id="ven-nombre" required placeholder="Ej. Finca La Esperanza"></div>
+                    <div class="form-group"><label>Imagen de la Cosecha 📸</label><input type="file" id="ven-imagen" accept="image/*" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;"></div>
+                    <div class="form-group"><label>Producto que deseas vender</label><input type="text" id="ven-producto" required placeholder="Ej. Café, Maíz, Miel, Cacao"></div>
+                    <div class="grid-3" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group"><label>Cantidad Disponible</label><input type="number" id="ven-cantidad" required placeholder="Ej. 50"></div>
+                        <div class="form-group"><label>Unidad de medida</label>
+                            <select id="ven-unidad" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit;">
+                                <option value="Kilos">Kilos (kg)</option>
+                                <option value="Gramos">Gramos (g)</option>
+                                <option value="Toneladas">Toneladas (t)</option>
+                                <option value="Litros">Litros (L)</option>
+                                <option value="Cajas">Cajas</option>
+                                <option value="Piezas">Piezas / Unidades</option>
+                            </select>
                         </div>
-                        <div class="form-group">
-                            <label>Imagen de la Cosecha 📸</label>
-                            <input type="file" id="ven-imagen" accept="image/*" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;">
-                        </div>
-                        <div class="form-group">
-                            <label>Producto que deseas vender</label>
-                            <input type="text" id="ven-producto" required placeholder="Ej. Café, Maíz, Miel, Cacao">
-                        </div>
-                        <div class="grid-3" style="grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <div class="form-group">
-                                <label>Cantidad Disponible</label>
-                                <input type="number" id="ven-cantidad" required placeholder="Ej. 50">
-                            </div>
-                            <div class="form-group">
-                                <label>Unidad de medida</label>
-                                <select id="ven-unidad" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit;">
-                                    <option value="Kilos">Kilos (kg)</option>
-                                    <option value="Gramos">Gramos (g)</option>
-                                    <option value="Toneladas">Toneladas (t)</option>
-                                    <option value="Litros">Litros (L)</option>
-                                    <option value="Cajas">Cajas</option>
-                                    <option value="Piezas">Piezas / Unidades</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Precio ($) ✅</label>
-                            <input type="number" id="ven-precio" required placeholder="Ej. 180">
-                        </div>
-                        <button type="submit" class="btn" style="width: 100%; margin-top: 15px; background: var(--accent);">Publicar Producto Permanentemente</button>
-                    </form>
-                </div>
-
-                <div id="bloque-vendedor-denegado" style="display:none; text-align:center; padding: 20px;">
-                    <span style="font-size: 4rem;">🚫</span>
-                    <h3 style="color: var(--danger); margin-top: 15px;">Acceso Denegado</h3>
-                    <p style="color: var(--text-muted); margin-top: 10px;">Estás usando una cuenta de <strong>Cliente (Comprador)</strong>.</p>
-                    <p style="margin-top: 5px;">Solo los productores pueden acceder a esta sección para vender. Si deseas vender, cierra sesión y crea una cuenta de Productor.</p>
-                </div>
-
+                    </div>
+                    <div class="form-group"><label>Precio ($) ✅</label><input type="number" id="ven-precio" required placeholder="Ej. 180"><small style="color: var(--primary);">Aplica nuestro Cálculo Aplicado en el Panel del Productor para asegurar tu beneficio óptimo.</small></div>
+                    <button type="submit" class="btn" style="width: 100%; margin-top: 15px; background: var(--accent);">Publicar Producto</button>
+                </form>
             </div>
         </section>
 
         <section id="vista-tienda" class="view">
-            <div class="section-title" style="margin-top: 40px;">
-                <h2>Mercado Integrado SQLite 🛒</h2>
-                <p style="color: var(--text-muted); max-width: 600px; margin: 10px auto; font-size: 1.1rem; text-align: center;">El catálogo es público, pero <strong>solo los Clientes registrados pueden comprar</strong>.</p>
-                <div class="underline"></div>
-            </div>
+            <div class="section-title" style="margin-top: 40px;"><h2>Mercado Integrado SQLite 🛒</h2><p style="color: var(--text-muted); max-width: 600px; margin: 10px auto; font-size: 1.1rem; text-align: center;">El catálogo es público, pero <strong>solo los usuarios registrados pueden comprar</strong>.</p><div class="underline"></div></div>
             
             <div style="background: var(--bg-card); padding: 30px; border-radius: 20px; border: 1px solid var(--border-color); margin-bottom: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
                 <h3 style="text-align: center; margin-bottom: 30px; color: var(--primary-dark);">⚙️ Panel Analítico del Productor ✅</h3>
@@ -236,138 +174,71 @@
                         <h3>Límite de Protección</h3>
                         <div class="math-box" style="font-size: 0.9rem; text-align:center; margin-bottom:10px; font-weight:bold;">lim (t→a) P(t) ≥ Costo</div>
                         <div style="display:flex; justify-content:center;"><canvas id="limitCanvas" width="220" height="150"></canvas></div>
-                        <div class="controls">
-                            <div class="slider-label" style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Precio Simulado</span> <span id="limitVal" style="font-weight:bold;">$60</span></div>
-                            <input type="range" id="limitRange" min="20" max="100" value="60" style="width:100%;" oninput="updateLimit(this.value)">
-                            <span id="limitStatus" class="status-badge" style="color:var(--primary); font-weight:bold; display:block; margin-top:10px;">ESTADO: SEGURO</span>
-                        </div>
+                        <div class="controls"><div class="slider-label" style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Precio Simulado</span> <span id="limitVal" style="font-weight:bold;">$60</span></div><input type="range" id="limitRange" min="20" max="100" value="60" style="width:100%;" oninput="updateLimit(this.value)"><span id="limitStatus" class="status-badge" style="color:var(--primary); font-weight:bold; display:block; margin-top:10px;">ESTADO: SEGURO</span></div>
                     </div>
                     <div class="card reveal active" style="box-shadow: none; border: 1px dashed var(--border-color);">
                         <h3>Derivada de Demanda</h3>
                         <div class="math-box" id="derivFormula" style="font-size: 0.9rem; text-align:center; margin-bottom:10px; font-weight:bold;">dP/dt = Pendiente</div>
                         <div style="display:flex; justify-content:center;"><canvas id="derivCanvas" width="220" height="150"></canvas></div>
-                        <div class="controls">
-                            <div class="slider-label" style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Tiempo (t)</span> <span id="derivVal" style="font-weight:bold;">50%</span></div>
-                            <input type="range" id="derivRange" min="0" max="100" value="50" style="width:100%;" oninput="updateDeriv(this.value)">
-                            <span id="derivStatus" class="status-badge" style="color:var(--secondary); font-weight:bold; display:block; margin-top:10px;">ESTABLE</span>
-                        </div>
+                        <div class="controls"><div class="slider-label" style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Tiempo (t)</span> <span id="derivVal" style="font-weight:bold;">50%</span></div><input type="range" id="derivRange" min="0" max="100" value="50" style="width:100%;" oninput="updateDeriv(this.value)"><span id="derivStatus" class="status-badge" style="color:var(--secondary); font-weight:bold; display:block; margin-top:10px;">ESTABLE</span></div>
                     </div>
                     <div class="card reveal active" style="box-shadow: none; border: 1px dashed var(--border-color); background: rgba(168, 85, 247, 0.05);">
                         <h3 style="color: var(--accent);">Optimización de Ganancia</h3>
                         <div class="math-box" id="optFormula" style="font-size: 0.9rem; text-align:center; margin-bottom:10px; font-weight:bold;">B'(x) = 0</div>
                         <div style="display:flex; justify-content:center;"><canvas id="optCanvas" width="220" height="150"></canvas></div>
-                        <div class="controls">
-                            <label style="font-size: 0.9rem; display: block; margin-bottom: 5px; color: var(--text-muted);">Kilogramos a vender:</label>
-                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
-                                <input type="number" id="optInput" min="0" max="1000" value="100" oninput="sincronizarOpt(this.value)" style="width: 80px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem;">
-                                <span style="font-size: 0.9rem; font-weight: bold;">kg</span>
-                            </div>
-                            <input type="range" id="optRange" min="0" max="1000" value="100" style="width:100%;" oninput="sincronizarOpt(this.value)">
-                            <span id="optStatus" class="status-badge" style="color:var(--accent); font-weight:bold; display:block; margin-top:10px;">Beneficio: $0</span>
-                        </div>
+                        <div class="controls"><label style="font-size: 0.9rem; display: block; margin-bottom: 5px; color: var(--text-muted);">Kilogramos a vender:</label><div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;"><input type="number" id="optInput" min="0" max="1000" value="100" oninput="sincronizarOpt(this.value)" style="width: 80px; padding: 5px; border-radius: 5px; border: 1px solid #ccc; font-size: 1rem;"><span style="font-size: 0.9rem; font-weight: bold;">kg</span></div><input type="range" id="optRange" min="0" max="1000" value="100" style="width:100%;" oninput="sincronizarOpt(this.value)"><span id="optStatus" class="status-badge" style="color:var(--accent); font-weight:bold; display:block; margin-top:10px;">Beneficio: $0</span></div>
                     </div>
                 </div>
             </div>
 
             <h3 style="margin-bottom: 20px; font-size: 1.8rem; color: var(--text-main);">Catálogo Disponible Público 🛒</h3>
+            <div class="card" style="padding: 20px; margin-bottom: 20px;">
+                <h4 style="margin-bottom: 15px; color: var(--secondary);">📍 Mapa de Origen de los Productos</h4>
+                <div id="mapa-mercado"></div>
+            </div>
             <div class="card" style="overflow-x: auto; padding: 0;">
                 <div id="catalogo-productos"></div>
             </div>
         </section>
 
         <section id="vista-admin" class="view">
-            <div class="section-title" style="margin-top: 40px;">
-                <h2>Panel de Administrador 🔒</h2>
-                <div class="underline"></div>
-            </div>
+            <div class="section-title" style="margin-top: 40px;"><h2>Panel de Administrador 🔒</h2><div class="underline"></div></div>
             
             <div class="card" id="admin-login-box" style="max-width: 400px; margin: 0 auto;">
                 <h3 style="text-align:center; color: var(--danger);">Acceso Restringido 🔒</h3>
                 <p style="text-align:center; font-size:0.9rem; margin-bottom: 20px;">Solo para autores del proyecto.</p>
-                <div class="form-group">
-                    <label>Nombre Completo</label>
-                    <input type="text" id="admin-user" placeholder="Ej. Gael Jesús Marroquín...">
-                </div>
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="admin-pass" placeholder="******">
-                </div>
+                <div class="form-group"><label>Nombre Completo</label><input type="text" id="admin-user" placeholder="Ej. Gael Jesús..."></div>
+                <div class="form-group"><label>Contraseña</label><input type="password" id="admin-pass" placeholder="******"></div>
                 <button class="btn" style="width:100%; background:var(--danger);" onclick="loginAdmin()">Ingresar</button>
             </div>
 
             <div class="card" id="admin-dashboard" style="display:none; max-width: 1200px; margin: 0 auto;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                    <h3 style="color: var(--primary); margin: 0;">Registro de compras y ventas ✅</h3>
+                    <h3 style="color: var(--primary); margin: 0;">Registro Histórico de Compras ✅</h3>
                     <button class="btn" style="background:var(--secondary); padding: 8px 15px;" onclick="cerrarAdmin()">Cerrar Admin</button>
                 </div>
-                <p style="margin-bottom: 15px;">Registro oficial de todas las compras y ventas que marca la ubicación de origen de la compra.</p>
+                <p style="margin-bottom: 15px;">Transacciones completadas entre compradores y vendedores.</p>
                 <div style="overflow-x: auto; margin-bottom: 40px;">
                     <div id="tabla-transacciones"></div>
+                </div>
+
+                <h3 style="color: var(--accent); margin-top: 40px; border-top: 1px solid #ccc; padding-top: 30px;">📦 Registro de Publicaciones (Inventario Histórico)</h3>
+                <p style="margin-bottom: 15px;">Aquí se muestran todas las publicaciones creadas. Si un vendedor elimina su publicación, aparecerá aquí como "Oculta". Solo el Admin puede borrarla de forma definitiva.</p>
+                <div style="overflow-x: auto; margin-bottom: 40px;">
+                    <div id="tabla-productos-admin"></div>
                 </div>
             </div>
         </section>
 
         <section id="vista-ajustes" class="view">
-            <div class="section-title" style="margin-top: 40px;">
-                <h2>Ajustes y Configuración</h2>
-                <div class="underline"></div>
-            </div>
-            
+            <div class="section-title" style="margin-top: 40px;"><h2>Ajustes y Configuración</h2><div class="underline"></div></div>
             <div class="card" style="max-width: 600px; margin: 0 auto;">
-                <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">Personaliza tu experiencia en Exporta Tradición.</p>
-
                 <div class="ajuste-item" id="contenedor-instalar" style="display: none; background: rgba(168, 85, 247, 0.1); padding: 20px; border-radius: 12px; border: 1px solid var(--accent); margin-bottom: 20px;">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <span style="font-size: 2rem;">📱</span>
-                        <div>
-                            <h3 style="margin: 0; margin-bottom: 5px; color: var(--accent);">Instalar App</h3>
-                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Descarga Exporta Tradición en tu celular para acceso rápido.</p>
-                        </div>
-                    </div>
-                    <button id="btn-instalar" style="background: var(--accent); color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; font-size: 1rem;">⬇️ Instalar</button>
+                    <div style="display: flex; align-items: center; gap: 15px;"><span style="font-size: 2rem;">📱</span><div><h3 style="margin: 0; margin-bottom: 5px; color: var(--accent);">Instalar App</h3><p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Descarga Exporta Tradición en tu celular para acceso rápido.</p></div></div><button id="btn-instalar" style="background: var(--accent); color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; font-size: 1rem;">⬇️ Instalar</button>
                 </div>
-
-                <div class="ajuste-item">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <span style="font-size: 2rem;">🌙</span>
-                        <div>
-                            <h3 style="margin: 0; margin-bottom: 5px;">Modo Oscuro</h3>
-                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Protege tu vista en ambientes oscuros.</p>
-                        </div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-dark" onchange="toggleDarkMode()">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="ajuste-item">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <span style="font-size: 2rem;">🔎</span>
-                        <div>
-                            <h3 style="margin: 0; margin-bottom: 5px;">Texto Grande</h3>
-                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Aumenta el tamaño de la letra.</p>
-                        </div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-text" onchange="toggleLargeText()">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="ajuste-item" style="border-bottom: none;">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <span style="font-size: 2rem;">🔊</span>
-                        <div>
-                            <h3 style="margin: 0; margin-bottom: 5px;">Voz Automática</h3>
-                            <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">El sistema leerá la página automáticamente.</p>
-                        </div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="toggle-voice" onchange="toggleLectorVoz()">
-                        <span class="slider"></span>
-                    </label>
-                </div>
+                <div class="ajuste-item"><div style="display: flex; align-items: center; gap: 15px;"><span style="font-size: 2rem;">🌙</span><div><h3 style="margin: 0; margin-bottom: 5px;">Modo Oscuro</h3><p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Protege tu vista en ambientes oscuros.</p></div></div><label class="toggle-switch"><input type="checkbox" id="toggle-dark" onchange="toggleDarkMode()"><span class="slider"></span></label></div>
+                <div class="ajuste-item"><div style="display: flex; align-items: center; gap: 15px;"><span style="font-size: 2rem;">🔎</span><div><h3 style="margin: 0; margin-bottom: 5px;">Texto Grande</h3><p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">Aumenta el tamaño de la letra.</p></div></div><label class="toggle-switch"><input type="checkbox" id="toggle-text" onchange="toggleLargeText()"><span class="slider"></span></label></div>
+                <div class="ajuste-item" style="border-bottom: none;"><div style="display: flex; align-items: center; gap: 15px;"><span style="font-size: 2rem;">🔊</span><div><h3 style="margin: 0; margin-bottom: 5px;">Voz Automática</h3><p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">El sistema leerá la página automáticamente.</p></div></div><label class="toggle-switch"><input type="checkbox" id="toggle-voice" onchange="toggleLectorVoz()"><span class="slider"></span></label></div>
             </div>
         </section>
 
@@ -399,4 +270,4 @@
 
     <script src="script.js"></script>
 </body>
-</html>
+</html>S
