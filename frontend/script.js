@@ -14,7 +14,6 @@ function drawLimitChart(val) {
     const ctx = canvas.getContext('2d');
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0, 0, w, h);
-
     ctx.beginPath();
     ctx.strokeStyle = '#ef4444';
     ctx.setLineDash([5, 5]);
@@ -22,7 +21,6 @@ function drawLimitChart(val) {
     ctx.lineTo(w, h - 50);
     ctx.stroke();
     ctx.setLineDash([]);
-
     ctx.fillStyle = val >= 50 ? '#16a34a' : '#ef4444';
     ctx.fillRect(w/2 - 25, h - val, 50, val);
 }
@@ -41,12 +39,10 @@ function drawDerivChart(val) {
     const ctx = canvas.getContext('2d');
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0, 0, w, h);
-
     ctx.beginPath();
     ctx.strokeStyle = '#3b82f6';
     ctx.lineWidth = 4;
     ctx.moveTo(0, h);
-    
     let controlY = h - (val * 1.5);
     ctx.quadraticCurveTo(w/2, controlY, w, h - (val * 0.8));
     ctx.stroke();
@@ -56,9 +52,7 @@ function sincronizarOpt(val) {
     let numericVal = parseFloat(val);
     if (isNaN(numericVal) || numericVal < 0) numericVal = 0;
     if (numericVal > 1000) numericVal = 1000;
-
     document.getElementById('optRange').value = numericVal;
-    
     const inputNum = document.getElementById('optInput');
     if (parseFloat(inputNum.value) !== numericVal) {
         inputNum.value = numericVal;
@@ -70,9 +64,7 @@ function updateOpt(numericVal) {
     const status = document.getElementById('optStatus');
     let ganancia = (-0.05 * Math.pow(numericVal, 2)) + (50 * numericVal);
     if (ganancia < 0) ganancia = 0;
-
     status.innerText = "Beneficio Estimado: $" + Math.floor(ganancia).toLocaleString('es-MX');
-    
     if (numericVal >= 400 && numericVal <= 600) {
         status.style.color = "var(--accent, #f59e0b)";
     } else {
@@ -87,11 +79,9 @@ function drawOptChart(val) {
     const ctx = canvas.getContext('2d');
     const w = canvas.width, h = canvas.height;
     ctx.clearRect(0, 0, w, h);
-    
     ctx.beginPath();
     ctx.strokeStyle = '#94a3b8';
     ctx.lineWidth = 2;
-    
     for(let x = 0; x <= w; x++) {
         let sliderValX = x * (1000 / w);
         let y = h - (((-0.05 * Math.pow(sliderValX, 2)) + (50 * sliderValX)) * (h / 12500)); 
@@ -99,31 +89,48 @@ function drawOptChart(val) {
         else ctx.lineTo(x, y);
     }
     ctx.stroke();
-
     let currentX = (val / 1000) * w;
     let currentY = h - (((-0.05 * Math.pow(val, 2)) + (50 * val)) * (h / 12500));
-
     ctx.beginPath();
     ctx.fillStyle = 'var(--accent, #f59e0b)';
     ctx.arc(currentX, currentY, 6, 0, Math.PI * 2);
     ctx.fill();
 }
 
-// --- 2. NAVEGACIÓN Y ACCESIBILIDAD ---
+// --- 2. NAVEGACIÓN Y VARIABLES GLOBALES ---
+
+let mapaGlobal = null;
+let marcadoresMapa = null;
 
 function navegar(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     const vista = document.getElementById(id);
-    vista.classList.add('active');
-    window.scrollTo(0,0);
+    if(vista) {
+        vista.classList.add('active');
+        window.scrollTo(0,0);
+    }
 
-    // Cargar Catálogo siempre
-    if(id === 'vista-tienda') renderizarCatalogoDB();
+    localStorage.setItem('pestana_actual', id);
+    const userSession = JSON.parse(localStorage.getItem('sesion_exporta'));
+
+    if(id === 'vista-registro-venta') {
+        if(!userSession) {
+            alert("🔒 Para registrar y vender una cosecha, primero debes crear tu cuenta en la pestaña 'Registro'.");
+            navegar('vista-registro');
+            return;
+        }
+    }
+
+    if(id === 'vista-tienda') {
+        renderizarCatalogoDB();
+        setTimeout(() => { if (mapaGlobal) mapaGlobal.invalidateSize(); }, 300);
+    }
+    
     if(id === 'vista-admin') verificarEstadoAdmin();
 
     if(localStorage.getItem('lector_voz') === 'true') {
         window.speechSynthesis.cancel();
-        const texto = vista.innerText.substring(0, 350); 
+        const texto = vista ? vista.innerText.substring(0, 350) : ""; 
         const speech = new SpeechSynthesisUtterance(texto);
         speech.lang = 'es-MX';
         window.speechSynthesis.speak(speech);
@@ -138,18 +145,16 @@ function cerrarModalSiFuera(event) {
 
 // --- 3. BASE DE DATOS REAL Y REGISTROS ---
 
-// AQUÍ ESTÁ EL CAMBIO: Ahora apunta a tu servidor real en la nube
 const API_BASE = "https://exporta-tradicion.onrender.com";
 
-// Lógica de Registro (Funciona para ambos: Comprador y Vendedor)
-async function registrarGenerico(e, rolStr, prefix) {
+async function guardarRegistroGeneral(e) {
     e.preventDefault();
     const datos = {
-        nombre: document.getElementById(prefix+'-nombre').value,
-        apellido: document.getElementById(prefix+'-apellido').value,
-        localizacion: document.getElementById(prefix+'-localizacion').value,
-        telefono: document.getElementById(prefix+'-telefono').value,
-        rol: rolStr
+        nombre: document.getElementById('reg-nombre').value,
+        apellido: document.getElementById('reg-apellido').value,
+        localizacion: document.getElementById('reg-localizacion').value,
+        telefono: document.getElementById('reg-telefono').value,
+        rol: "universal" 
     };
 
     try {
@@ -161,27 +166,18 @@ async function registrarGenerico(e, rolStr, prefix) {
 
         if (response.ok) {
             localStorage.setItem('sesion_exporta', JSON.stringify(datos));
-            cargarAjustes(); // Esto mostrará los menús correctos
-            
-            if (rolStr === 'comprador') {
-                navegar('vista-tienda');
-                alert("¡Cuenta de Cliente creada! Ya puedes explorar y comprar productos.");
-            } else {
-                alert("¡Cuenta de Productor creada! Ya puedes llenar los datos de tu cosecha para publicarla.");
-            }
+            cargarAjustes(); 
+            navegar('vista-tienda');
+            alert("¡Cuenta creada! Ya puedes comprar en el mercado o ir a la pestaña 'Vender' para publicar tus productos.");
         } else {
             const result = await response.json();
             alert("Error: " + result.detail);
         }
     } catch (error) {
-        alert("Error de conexión con el servidor. Es posible que esté iniciando, intenta de nuevo en unos segundos.");
+        alert("Error de conexión con el servidor. Intenta de nuevo en unos segundos.");
     }
 }
 
-window.registrarComprador = function(e) { registrarGenerico(e, 'comprador', 'regC'); }
-window.registrarVendedor = function(e) { registrarGenerico(e, 'vendedor', 'regV'); }
-
-// Publicar Producto
 async function guardarRegistroVenta(e) {
     e.preventDefault();
     const userSession = JSON.parse(localStorage.getItem('sesion_exporta'));
@@ -233,10 +229,67 @@ async function guardarRegistroVenta(e) {
     }
 }
 
-// Catálogo
+function actualizarMapa(productos) {
+    if (!mapaGlobal) {
+        mapaGlobal = L.map('mapa-mercado').setView([14.903, -92.262], 8);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(mapaGlobal);
+        marcadoresMapa = L.layerGroup().addTo(mapaGlobal);
+    }
+    
+    marcadoresMapa.clearLayers();
+
+    productos.forEach(async (item) => {
+        try {
+            let queryTexto = encodeURIComponent(item.ubicacion_vendedor + ", Chiapas, Mexico");
+            let respuesta = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${queryTexto}`);
+            let datosGeolocalizacion = await respuesta.json();
+            
+            if(datosGeolocalizacion.length > 0) {
+                let lat = datosGeolocalizacion[0].lat;
+                let lon = datosGeolocalizacion[0].lon;
+                
+                let pin = L.marker([lat, lon]).addTo(marcadoresMapa);
+                
+                const img = item.imagen_url.startsWith('http') ? item.imagen_url : `${API_BASE}${item.imagen_url}`;
+                pin.bindPopup(`
+                    <div style="text-align:center;">
+                        <strong>${item.vendedor_finca}</strong><br>
+                        <img src="${img}" style="width:40px; height:40px; border-radius:5px; margin:5px 0;"><br>
+                        Vende <b>${item.producto}</b><br>
+                        $${item.precio} / ${item.unidad}
+                    </div>
+                `);
+            }
+        } catch(e) {
+            console.log("No se pudo ubicar:", item.ubicacion_vendedor);
+        }
+    });
+}
+
+// ELIMINAR (Soft Delete del Vendedor)
+async function eliminarProducto(productoId) {
+    if(confirm("¿Deseas ocultar y retirar este producto del Mercado Público? \n\n(Quedará el registro en el panel de administrador).")) {
+        try {
+            const response = await fetch(`${API_BASE}/api/eliminar-producto/${productoId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                alert("🗑️ Producto retirado exitosamente del mercado.");
+                renderizarCatalogoDB(); 
+            } else {
+                alert("Error al intentar ocultar el producto.");
+            }
+        } catch (error) {
+            alert("Error de conexión con el servidor.");
+        }
+    }
+}
+
 async function renderizarCatalogoDB() {
     const contenedor = document.getElementById('catalogo-productos');
-    contenedor.innerHTML = "<p style='padding:20px; color:var(--text-muted);'>Cargando mercado...</p>";
+    contenedor.innerHTML = "<p style='padding:20px; color:var(--text-muted);'>Cargando mercado interactivo...</p>";
 
     const userSession = JSON.parse(localStorage.getItem('sesion_exporta'));
 
@@ -248,8 +301,11 @@ async function renderizarCatalogoDB() {
 
         if (bd_real.length === 0) {
             contenedor.innerHTML = "<p style='padding:20px; color:var(--text-muted);'>No hay productos disponibles actualmente en el mercado.</p>";
+            if (marcadoresMapa) marcadoresMapa.clearLayers();
             return;
         }
+
+        actualizarMapa(bd_real);
 
         let html = '<table class="data-table"><tr><th>Vendedor</th><th>Producto</th><th>Disp.</th><th>Precio</th><th>Ubicación</th><th>Acción</th></tr>';
         
@@ -258,14 +314,12 @@ async function renderizarCatalogoDB() {
 
             if (!userSession) {
                 btnAccion = `<button onclick="alertaRegistroCompra()" style="background:var(--secondary); color:white; border:none; padding:8px; border-radius:5px; cursor:pointer; width:100%; font-weight:bold;">🛒 Inicia sesión para comprar</button>`;
-            } else if (userSession.rol === 'vendedor') {
+            } else {
                 if (userSession.telefono === item.creador_usuario) {
-                    btnAccion = `<button style="background:#94a3b8; color:white; border:none; padding:8px; border-radius:5px; width:100%;" disabled>Mi Publicación</button>`;
+                    btnAccion = `<button onclick="eliminarProducto(${item.id_producto})" style="background:var(--danger); color:white; border:none; padding:8px; border-radius:5px; width:100%; cursor:pointer; font-weight:bold;" title="Retirar del mercado">🗑️ Eliminar</button>`;
                 } else {
-                    btnAccion = `<button onclick="alert('Tu perfil es de Vendedor. Si deseas comprar otros productos, crea una cuenta de Cliente.')" style="background:#ef4444; color:white; border:none; padding:8px; border-radius:5px; cursor:not-allowed; width:100%;">Solo venta</button>`;
+                    btnAccion = `<button onclick="iniciarProcesoCompra(${item.id_producto})" style="background:var(--primary); color:white; border:none; padding:8px; border-radius:5px; cursor:pointer; width:100%; font-weight:bold;">🛒 Comprar</button>`;
                 }
-            } else if (userSession.rol === 'comprador') {
-                btnAccion = `<button onclick="iniciarProcesoCompra(${item.id_producto})" style="background:var(--primary); color:white; border:none; padding:8px; border-radius:5px; cursor:pointer; width:100%; font-weight:bold;">🛒 Comprar</button>`;
             }
 
             const fullImageUrl = item.imagen_url.startsWith('http') ? item.imagen_url : `${API_BASE}${item.imagen_url}`;
@@ -282,16 +336,15 @@ async function renderizarCatalogoDB() {
         html += '</table>';
         contenedor.innerHTML = html;
     } catch (error) {
-        contenedor.innerHTML = "<p style='padding:20px; color:red;'>Error conectando al backend. Es posible que el servidor esté iniciando, recarga la página en unos segundos.</p>";
+        contenedor.innerHTML = "<p style='padding:20px; color:red;'>Error conectando al servidor. Recarga la página en unos segundos.</p>";
     }
 }
 
 window.alertaRegistroCompra = function() {
-    alert("🔒 Para proteger a los productores, necesitas registrarte como CLIENTE gratis antes de comprar.");
+    alert("🔒 Para proteger a los productores, necesitas registrarte gratis antes de poder comprar.");
     navegar('vista-registro');
 }
 
-// Comprar Producto
 async function iniciarProcesoCompra(productoId) {
     const userSession = JSON.parse(localStorage.getItem('sesion_exporta'));
     
@@ -318,10 +371,9 @@ async function iniciarProcesoCompra(productoId) {
     }
 }
 
-
 // --- 4. PANEL DE ADMINISTRADOR ---
 
-const equipo = ["Gael Jesús Marroquín Mateo", "Oscar Toledo Carrascosa", "Nelly Jackeline Chirino Ortiz", "Julio Cesar Meridad Ramírez", "Crhistopher Alexander Molina Hernández"];
+const equipo = ["Gael Jesús Marroquín Mateo", "Yuslin Garcia Ramos", "Leo Ronay Velazquez Gutierrez"];
 
 function loginAdmin() {
     const userText = document.getElementById('admin-user').value.toLowerCase();
@@ -341,6 +393,7 @@ function verificarEstadoAdmin() {
         document.getElementById('admin-login-box').style.display = 'none';
         document.getElementById('admin-dashboard').style.display = 'block';
         cargarTablaAdminDB();
+        cargarTablaProductosAdminDB(); // CARGA LA NUEVA TABLA DE PUBLICACIONES
     } else {
         document.getElementById('admin-login-box').style.display = 'block';
         document.getElementById('admin-dashboard').style.display = 'none';
@@ -385,6 +438,63 @@ async function cargarTablaAdminDB() {
     }
 }
 
+// NUEVA FUNCIÓN: CARGAR REGISTRO DE TODAS LAS PUBLICACIONES PARA EL ADMIN
+async function cargarTablaProductosAdminDB() {
+    const contenedor = document.getElementById('tabla-productos-admin');
+    contenedor.innerHTML = "<p style='color: var(--text-muted); padding: 20px;'>Cargando inventario histórico...</p>";
+
+    try {
+        const response = await fetch(`${API_BASE}/api/admin/productos`);
+        const productos = await response.json();
+
+        if (productos.length === 0) {
+            contenedor.innerHTML = "<p style='padding: 20px;'>No hay productos registrados en la base de datos.</p>";
+            return;
+        }
+
+        let html = '<table class="data-table"><tr><th>ID</th><th>Vendedor</th><th>Producto</th><th>Estado</th><th>Acción Admin</th></tr>';
+        productos.forEach(item => {
+            let badgeEstado = item.estado === 'activo' 
+                ? '<span style="background:var(--primary); color:white; padding:4px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">Activo</span>' 
+                : '<span style="background:#6b7280; color:white; padding:4px 8px; border-radius:12px; font-size:0.8rem; font-weight:bold;">Oculto por Vendedor</span>';
+
+            html += `<tr>
+                <td style="color: gray; font-weight: bold;">#${item.id_producto}</td>
+                <td>${item.vendedor_finca}</td>
+                <td><strong>${item.producto}</strong> (${item.cantidad} ${item.unidad})</td>
+                <td>${badgeEstado}</td>
+                <td><button onclick="eliminarProductoPermanenteAdmin(${item.id_producto})" style="background:var(--danger); color:white; border:none; padding:6px 12px; border-radius:5px; cursor:pointer; font-weight:bold;">⚠️ Borrar Definitivo</button></td>
+            </tr>`;
+        });
+        html += '</table>';
+        contenedor.innerHTML = html;
+    } catch (error) {
+        contenedor.innerHTML = "<p style='color: red; padding: 20px;'>Error cargando el historial de productos.</p>";
+    }
+}
+
+// NUEVA FUNCIÓN: EL ADMIN BORRA PERMANENTEMENTE (Hard Delete)
+async function eliminarProductoPermanenteAdmin(productoId) {
+    if(confirm("⚠️ ATENCIÓN ADMIN: \n\n¿Estás seguro de que deseas eliminar este producto PERMANENTEMENTE de la Base de Datos? Esta acción no se puede deshacer.")) {
+        try {
+            const response = await fetch(`${API_BASE}/api/admin/eliminar-producto-permanente/${productoId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                alert("✅ Producto eliminado permanentemente de la base de datos.");
+                cargarTablaProductosAdminDB(); 
+                if(document.getElementById('vista-tienda').classList.contains('active')) {
+                    renderizarCatalogoDB();
+                }
+            } else {
+                alert("Error al intentar borrar permanentemente.");
+            }
+        } catch (error) {
+            alert("Error de conexión con el servidor.");
+        }
+    }
+}
+
 // --- 5. PERFILES Y ACCESIBILIDAD ---
 
 function cerrarSesion() {
@@ -411,42 +521,19 @@ function toggleLectorVoz() {
 function cargarAjustes() {
     const user = JSON.parse(localStorage.getItem('sesion_exporta'));
     
-    // Contenedores del Comprador (Registro normal)
-    const formComprador = document.getElementById('bloque-formulario-comprador');
-    const perfilGlobal = document.getElementById('bloque-perfil');
-    
-    // Contenedores del Vendedor (Vender Cosecha)
-    const formVendedor = document.getElementById('bloque-registro-vendedor');
-    const publicarVenta = document.getElementById('bloque-publicar-venta');
-    const vendedorDenegado = document.getElementById('bloque-vendedor-denegado');
+    const formRegistro = document.getElementById('bloque-formulario');
+    const perfilActivo = document.getElementById('bloque-perfil');
 
     if(user) {
-        if(formComprador) formComprador.style.display = 'none';
-        if(perfilGlobal) {
-            perfilGlobal.style.display = 'block';
+        if(formRegistro) formRegistro.style.display = 'none';
+        if(perfilActivo) {
+            perfilActivo.style.display = 'block';
             document.getElementById('texto-bienvenida').innerText = "¡Hola, " + user.nombre + "!";
-            document.getElementById('texto-rol').innerText = "Modo: " + (user.rol === 'vendedor' ? "🌾 Productor (Vendedor)" : "🛒 Cliente (Comprador)");
         }
         document.querySelector('.btn-registro-nav').innerText = "Perfil";
-
-        if(formVendedor) formVendedor.style.display = 'none';
-        
-        if(user.rol === 'vendedor') {
-            if(publicarVenta) publicarVenta.style.display = 'block';
-            if(vendedorDenegado) vendedorDenegado.style.display = 'none';
-        } else {
-            if(publicarVenta) publicarVenta.style.display = 'none';
-            if(vendedorDenegado) vendedorDenegado.style.display = 'block';
-        }
-
     } else {
-        if(formComprador) formComprador.style.display = 'block';
-        if(perfilGlobal) perfilGlobal.style.display = 'none';
-        
-        if(formVendedor) formVendedor.style.display = 'block';
-        if(publicarVenta) publicarVenta.style.display = 'none';
-        if(vendedorDenegado) vendedorDenegado.style.display = 'none';
-        
+        if(formRegistro) formRegistro.style.display = 'block';
+        if(perfilActivo) perfilActivo.style.display = 'none';
         document.querySelector('.btn-registro-nav').innerText = "Registro";
     }
 
@@ -543,4 +630,11 @@ function cargarTodo() {
 
     setTimeout(() => animateDonut('traditional'), 200);
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+
+    const ultimaPestana = localStorage.getItem('pestana_actual');
+    if (ultimaPestana) {
+        navegar(ultimaPestana);
+    } else {
+        navegar('vista-inicio');
+    }
 }
