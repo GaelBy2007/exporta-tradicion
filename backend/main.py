@@ -68,15 +68,15 @@ def iniciar_base_de_datos():
         );
     """)
     
-    # Truco para actualizar la BD sin borrar datos si ya existía
+    # Truco para actualizar la BD sin borrar datos si la tabla ya existía
     try:
         cursor.execute("ALTER TABLE Productos ADD COLUMN estado TEXT DEFAULT 'activo'")
     except:
-        pass # Si la columna ya existe, no hace nada
+        pass # Si la columna ya existe, no hace nada y sigue adelante
 
     conexion.commit()
     conexion.close()
-    print("✅ Base de datos SQLite inicializada")
+    print("✅ Base de datos SQLite inicializada y actualizada")
 
 class DatosUsuario(BaseModel):
     nombre: str
@@ -154,7 +154,7 @@ def obtener_catalogo():
         conexion = sqlite3.connect(DB_PATH)
         conexion.row_factory = sqlite3.Row
         cursor = conexion.cursor()
-        # EL MERCADO SOLO MUESTRA LOS ACTIVOS
+        # EL MERCADO PÚBLICO SOLO MUESTRA LOS ACTIVOS
         cursor.execute("SELECT * FROM Productos WHERE estado = 'activo'")
         filas = cursor.fetchall()
         conexion.close()
